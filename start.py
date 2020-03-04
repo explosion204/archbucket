@@ -8,5 +8,6 @@ bot.set_api(TelegramAPI(bot))
 # creating request processing pipelines (milti threading implementation)
 bot.create_pipeline()
 bot.create_pipeline()
+bot.create_pipeline()
 # start bot
 bot.start_bot()

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-
-import core
+from core import Request
 
 class AbstractAPI(ABC):
     @abstractmethod
@@ -8,5 +7,5 @@ class AbstractAPI(ABC):
         pass
 
     @abstractmethod
-    def send_response(self, request: core.Request):
+    def send_response(self, request: Request):
         pass

@@ -1,6 +1,5 @@
-import core
-import pipeline
-import threading
+from core import Pipeline, Request
+from threading import Thread
 from api.abstract_api import AbstractAPI
 
 class BotInterface:
@@ -13,9 +12,9 @@ class BotInterface:
         min_pipeline.push_request(request)
 
     def create_pipeline(self):
-        new_pipeline = pipeline.Pipeline(self.bot_api)
+        new_pipeline = Pipeline(self.bot_api)
         self.pipelines.append(new_pipeline)
-        pipeline_thread = threading.Thread(target=new_pipeline.start)
+        pipeline_thread = Thread(target=new_pipeline.start)
         pipeline_thread.start()
 
     def set_api(self, bot_api: AbstractAPI):
@@ -23,3 +22,6 @@ class BotInterface:
 
     def start_bot(self):
         self.bot_api.start()
+
+    def send_response(self, request: Request):
+        self.bot_api.send_response(request)
