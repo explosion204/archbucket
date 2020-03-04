@@ -1,12 +1,11 @@
 import core
 import pipeline
 import threading
-from api.telegram.telegram_api import TelegramAPI
+from api.abstract_api import AbstractAPI
 
-class ControlUnit:
+class BotInterface:
     def __init__(self):
         self.pipelines = list()
-        self.bot_api = TelegramAPI(self) # need to generalize 
 
     def push_request(self, request):
         free_pipelines = [item for item in self.pipelines]
@@ -19,6 +18,8 @@ class ControlUnit:
         pipeline_thread = threading.Thread(target=new_pipeline.start)
         pipeline_thread.start()
 
+    def set_api(self, bot_api: AbstractAPI):
+        self.bot_api = bot_api
+
     def start_bot(self):
         self.bot_api.start()
-
