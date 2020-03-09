@@ -2,6 +2,7 @@ from bot_interface import BotInterface
 from api.telegram.telegram_api import TelegramAPI
 
 # init bot interface
+
 bot = BotInterface()
 # set API
 bot.set_api(TelegramAPI(bot))

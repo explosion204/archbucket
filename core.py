@@ -2,16 +2,14 @@ from importlib import import_module
 from queue import Queue
 
 _modules = dict()
-_users = dict()
+_sessions = dict()
 
 def init_core():
     '''Load names of modules'''
     with open('modules/.modules') as file:
-        for line in file.readlines():
-            items = line.split()
-            module = import_module(f"modules.{items[0]}")
-            module_type = items[1]
-            _modules[items[0]] = (module, module_type)
+        for module_name in file.read().splitlines():
+            module = import_module(f"modules.{module_name}")
+            _modules[module_name] = module 
 
 class Pipeline:
     def __init__(self, bot_interface):
@@ -45,20 +43,20 @@ class Request:
 def call(request: Request):
     command = request.command
     # check if user has an active session
-    if request.id in _users:
+    if request.id in _sessions:
         # get name of active module
-        module_name = _users[request.id]
+        module_name = _sessions[request.id]
         # module of active session treats command as request argument too
         request.args.insert(0, request.command)
-        # enter module
-        _modules[module_name][0].run(request)
+        # enter module and get flag if session must be closed
+        session_exit = _modules[module_name].run(request)
+        if session_exit:
+            del _sessions[request.id]
         return
-    # if user has no active session then check type of module type
-    if _modules[command][1] == 'single':
-        _modules[request.command][0].run(request)
+    try:
+        session_exit = _modules[command].run(request)
+    except KeyError:
         return
-    if _modules[command][1] == 'multi':
-        # create active session for certain user
-        _users[request.id] = request.command
-        _modules[request.command][0].run(request)
-        return
+    # add session to track dictionary if script needs it
+    if not session_exit:
+        _sessions[request.id] = request.command

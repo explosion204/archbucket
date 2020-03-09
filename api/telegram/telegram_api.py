@@ -30,4 +30,5 @@ class TelegramAPI(AbstractAPI):
             print('photo with caption')
 
     def send_response(self, request: Request):
-        self.bot.send_message(chat_id=request.id, text=request.response)
+        if request.request_type == 'text' and not request.response == '':
+            self.bot.send_message(chat_id=request.id, text=request.response)
