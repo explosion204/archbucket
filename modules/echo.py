@@ -1,5 +1,7 @@
-def run(request_args: list) -> str:
-    if len(request_args) != 0:
-        return ' '.join(request_args)
+from core import Request
+
+def run(request: Request) -> str:
+    if len(request.args) != 0:
+        request.response =  ' '.join(request.args)
     else: 
-        return 'error!'
+        request.response = 'error'
