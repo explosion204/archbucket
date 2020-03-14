@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from core import Request
+from core.request_router import Request
 
 class AbstractAPI(ABC):
     @abstractmethod

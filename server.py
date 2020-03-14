@@ -1,0 +1,106 @@
+import threading
+import socketserver
+import socket
+import json
+import singleton3
+import api.telegram.telegram_api as telegram_api
+from core.bot import Bot
+from queue import Queue
+from importlib import import_module
+
+class Server(metaclass=singleton3.Singleton):
+    class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+        pass
+
+    # request handler
+    class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
+        def handle(self):
+            data = self.request.recv(1024)
+            response = Server().execute_command(data.decode())
+            # notify client about possible error
+            if response != None:
+                self.request.sendall(response.encode())
+
+    def __init__(self):
+        _instance = self
+        self.server_configured = False
+        self.server_started = False
+        self.bot_running = False
+        self.bot = Bot()
+        self._commands = {
+            'bot start': self.start_bot,
+            'bot stop': self.stop_bot,
+            'bot restart': self.restart_bot,
+            'pipelines set': self.set_pipelines,
+            'api set': self.set_api
+        }
+        self.api_list = {
+            'telegram': telegram_api.TelegramAPI
+        }
+        # configuring class
+        with open('server.config') as file:
+            config_dict = json.load(file)
+        self.server_is_local = config_dict['is_local']
+        self.port = config_dict['port']
+        self.pipelines_count = config_dict['pipelines_count']
+        self.api = self.api_list[config_dict['default_api']]
+
+    def start_server(self):
+        if self.server_configured:
+            self.server_thread.start()
+            print('[success]: Server started.')
+            self.server_started = True
+        else:
+            print('[error]: Server has not been configured yet.')
+
+    def configure_server(self):
+        try:
+            # getting internal ip of machine
+            self.ip = socket.gethostbyname(socket.gethostname()) if not self.server_is_local else '0.0.0.0'
+            # configuring server
+            self.server = Server.ThreadedTCPServer((self.ip, self.port), Server.ThreadedTCPRequestHandler)
+            self.server_thread = threading.Thread(target=self.server.serve_forever)
+        except Exception:
+            print('[error]: Cannot initialize server.')
+            return
+        print('[success]: Server configured.')
+        self.server_configured = True
+
+    def stop_server(self):
+        if self.server_started:
+            self.server.shutdown()
+            self.server.server_close()
+            print('[success]: Server stopped.')
+        else:
+            print('[error]: Cannot stop server. Is it running?')
+
+    def execute_command(self, text):
+        command_text = ' '.join(text.split()[:2])
+        args_list = text.split()[2:]
+        try:
+            return self._commands[command_text](*args_list)
+        except Exception:
+            return '[error]: Invalid command.'
+        # return self._commands[command_text](*args_list)
+        return None
+
+    def start_bot(self):
+        if self.api and not self.bot_running:
+            self.bot.set_api(self.api)
+            for _ in range(self.pipelines_count):
+                self.bot.create_pipeline()
+            self.bot.start_bot()
+            self.bot_running = True
+            print('Bot started running.')
+
+    def stop_bot(self):
+        pass
+
+    def restart_bot(self):
+        pass
+
+    def set_pipelines(self):
+        pass
+
+    def set_api(self, api_name):
+        self.api = self.api_list[api_name]
