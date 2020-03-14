@@ -1,11 +1,12 @@
-import core
+from core.request_router import RequestRouter, Request
+from core.pipeline import Pipeline
 from threading import Thread
 from api.abstract_api import AbstractAPI
 
-class BotInterface:
+class Bot:
     def __init__(self):
         self.pipelines = list()
-        core.init_core()
+        self.request_router = RequestRouter()
 
     def push_request(self, request):
         free_pipelines = [item for item in self.pipelines]
@@ -13,16 +14,16 @@ class BotInterface:
         min_pipeline.push_request(request)
 
     def create_pipeline(self):
-        new_pipeline = core.Pipeline(self.bot_api)
+        new_pipeline = Pipeline(self)
         self.pipelines.append(new_pipeline)
         pipeline_thread = Thread(target=new_pipeline.start)
         pipeline_thread.start()
 
-    def set_api(self, bot_api: AbstractAPI):
-        self.bot_api = bot_api
+    def set_api(self, bot_api: type(AbstractAPI)):
+        self.bot_api = bot_api(self)
 
     def start_bot(self):
         self.bot_api.start()
 
-    def send_response(self, request: core.Request):
+    def send_response(self, request: Request):
         self.bot_api.send_response(request)

@@ -1,4 +1,4 @@
-from core import Request
+from core.request_router import Request
 
 def run(request: Request) -> bool:
     '''
