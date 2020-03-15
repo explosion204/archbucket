@@ -16,9 +16,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data = self.request.recv(1024)
         response = Server().execute_command(data.decode())
-        # notify client about possible error
-        if response != None:
-            self.request.sendall(response.encode())
+        # notify client about request status
+        self.request.sendall(response.encode())
 
 class ServerRequestError(Exception):
     pass
@@ -82,40 +81,50 @@ class Server(metaclass=singleton3.Singleton):
         args_list = text.split()[2:]
         try:
             return self.commands[command_text](*args_list)
-        except Exception:
-            return '[error]: Invalid command.'
-        # return self._commands[command_text](*args_list)
-        return None
+        except Exception as ex:
+            return f'[error]: {str(ex)}'
 
     def start_bot(self):
-        if self.api and not self.bot_running:
-            self.bot.set_api(self.api)
-            for _ in range(self.pipelines_count):
-                self.bot.create_pipeline()
-            self.bot.start_bot()
-            self.bot_running = True
-            print('[success]: Bot is running.')
+        try:
+            if self.api and not self.bot_running:
+                self.bot.set_api(self.api)
+                for _ in range(self.pipelines_count):
+                    self.bot.create_pipeline()
+                self.bot.start_bot()
+                self.bot_running = True
+                return '[success]: Bot is running.'
+        except Exception:
+            raise ServerRequestError('Cannot start bot.')
 
     def stop_bot(self):
-        if self.bot_running:
-            self.bot.stop_bot()
-            self.bot_running = False
-            print('[success]: Bot stopped.')
+        try:
+            if self.bot_running:
+                self.bot.stop_bot()
+                self.bot_running = False
+                return '[success]: Bot stopped.'
+        except Exception:
+            raise ServerRequestError('Cannot stop bot.')
 
     def restart_bot(self):
-        if self.bot_running:
-            self.bot.stop_bot()
-            self.bot = Bot()
-            self.bot.set_api(self.api)
-            for _ in range(self.pipelines_count):
-                self.bot.create_pipeline()
-            self.start_bot()
-            print('[success]: Bot restarted.')
+        try:
+            if self.bot_running:
+                self.bot.stop_bot()
+                self.bot = Bot()
+                self.bot.set_api(self.api)
+                for _ in range(self.pipelines_count):
+                    self.bot.create_pipeline()
+                self.start_bot()
+                return '[success]: Bot restarted.'
+        except Exception:
+            raise ServerRequestError('Cannot restart bot.')
 
     def set_pipelines(self, number):
         self.pipelines_count = number
-        print(f'[success]: Pipelines count set to {number}. Restart to apply changes.')
+        return '[success]: Pipelines count set to {number}. Restart to apply changes.'
 
     def set_api(self, api_name):
-        self.api = self.api_list[api_name]
-        print(f'[success]: API set to {api_name}')
+        try:
+            self.api = self.api_list[api_name]
+            return f'[success]: API set to {api_name}'
+        except KeyError:
+            raise ServerRequestError('Cannot set API. Are you sure its name is correct?')
