@@ -25,12 +25,10 @@ class TelegramAPI(AbstractAPI):
     def listen(self, update, context):
         message = update.effective_message
         if message.text != None:
-            # text_request = str(message.text).split()
-            # request = Request(id=update.effective_chat.id, request_type='text', command=text_request[0], args=text_request[1:])
-            for i in range(100):
-                request = Request(id=update.effective_chat.id, request_type='text', command='echo_once', args=f'testing... {i}')
-                self.core_bot.push_request(request)
-                sleep(self.delay)
+            text_request = str(message.text).split()
+            request = Request(id=update.effective_chat.id, request_type='text', command=text_request[0], args=text_request[1:])
+            self.core_bot.push_request(request)
+            sleep(self.delay)
         if message.caption and len(message.photo) != 0:
             print('photo with caption')
 
