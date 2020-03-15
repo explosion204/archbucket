@@ -25,5 +25,8 @@ class Bot:
     def start_bot(self):
         self.bot_api.start()
 
+    def stop_bot(self):
+        self.bot_api.stop()
+
     def send_response(self, request: Request):
         self.bot_api.send_response(request)

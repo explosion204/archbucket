@@ -8,26 +8,29 @@ from core.bot import Bot
 from queue import Queue
 from importlib import import_module
 
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    pass
+
+# request handler
+class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
+    def handle(self):
+        data = self.request.recv(1024)
+        response = Server().execute_command(data.decode())
+        # notify client about possible error
+        if response != None:
+            self.request.sendall(response.encode())
+
+class ServerRequestError(Exception):
+    pass
+
 class Server(metaclass=singleton3.Singleton):
-    class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-        pass
-
-    # request handler
-    class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
-        def handle(self):
-            data = self.request.recv(1024)
-            response = Server().execute_command(data.decode())
-            # notify client about possible error
-            if response != None:
-                self.request.sendall(response.encode())
-
     def __init__(self):
         _instance = self
         self.server_configured = False
         self.server_started = False
         self.bot_running = False
         self.bot = Bot()
-        self._commands = {
+        self.commands = {
             'bot start': self.start_bot,
             'bot stop': self.stop_bot,
             'bot restart': self.restart_bot,
@@ -58,7 +61,7 @@ class Server(metaclass=singleton3.Singleton):
             # getting internal ip of machine
             self.ip = socket.gethostbyname(socket.gethostname()) if not self.server_is_local else '0.0.0.0'
             # configuring server
-            self.server = Server.ThreadedTCPServer((self.ip, self.port), Server.ThreadedTCPRequestHandler)
+            self.server = ThreadedTCPServer((self.ip, self.port), ThreadedTCPRequestHandler)
             self.server_thread = threading.Thread(target=self.server.serve_forever)
         except Exception:
             print('[error]: Cannot initialize server.')
@@ -78,7 +81,7 @@ class Server(metaclass=singleton3.Singleton):
         command_text = ' '.join(text.split()[:2])
         args_list = text.split()[2:]
         try:
-            return self._commands[command_text](*args_list)
+            return self.commands[command_text](*args_list)
         except Exception:
             return '[error]: Invalid command.'
         # return self._commands[command_text](*args_list)
@@ -91,16 +94,28 @@ class Server(metaclass=singleton3.Singleton):
                 self.bot.create_pipeline()
             self.bot.start_bot()
             self.bot_running = True
-            print('Bot started running.')
+            print('[success]: Bot is running.')
 
     def stop_bot(self):
-        pass
+        if self.bot_running:
+            self.bot.stop_bot()
+            self.bot_running = False
+            print('[success]: Bot stopped.')
 
     def restart_bot(self):
-        pass
+        if self.bot_running:
+            self.bot.stop_bot()
+            self.bot = Bot()
+            self.bot.set_api(self.api)
+            for _ in range(self.pipelines_count):
+                self.bot.create_pipeline()
+            self.start_bot()
+            print('[success]: Bot restarted.')
 
-    def set_pipelines(self):
-        pass
+    def set_pipelines(self, number):
+        self.pipelines_count = number
+        print(f'[success]: Pipelines count set to {number}. Restart to apply changes.')
 
     def set_api(self, api_name):
         self.api = self.api_list[api_name]
+        print(f'[success]: API set to {api_name}')

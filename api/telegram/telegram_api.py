@@ -12,14 +12,17 @@ class TelegramAPI(AbstractAPI):
         self.core_bot = core_bot
         self.updater = Updater(token=config.TOKEN, use_context=True)
         self.dispatcher = self.updater.dispatcher
-        self.dispatcher.add_handler(MessageHandler(Filters.text, self.__listen))
-        self.dispatcher.add_handler(MessageHandler(Filters.photo, self.__listen))
+        self.dispatcher.add_handler(MessageHandler(Filters.text, self.listen))
+        self.dispatcher.add_handler(MessageHandler(Filters.photo, self.listen))
         self.delay = 0.3 # 300 ms
     
     def start(self):
         self.updater.start_polling()
+        
+    def stop(self):
+        self.updater.stop()
 
-    def __listen(self, update, context):
+    def listen(self, update, context):
         message = update.effective_message
         if message.text != None:
             # text_request = str(message.text).split()

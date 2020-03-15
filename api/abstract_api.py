@@ -7,5 +7,9 @@ class AbstractAPI(ABC):
         pass
 
     @abstractmethod
+    def stop(self):
+        pass
+
+    @abstractmethod
     def send_response(self, request: Request):
         pass
