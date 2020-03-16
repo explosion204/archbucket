@@ -17,10 +17,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         data = self.request.recv(1024)
         response = Server().execute_command(data.decode())
         # notify client about request status
-        self.request.sendall(response.encode())
-
-class ServerRequestError(Exception):
-    pass
+        if response:
+            self.request.sendall(response.encode())
 
 class Server(metaclass=singleton3.Singleton):
     def __init__(self):
@@ -43,8 +41,8 @@ class Server(metaclass=singleton3.Singleton):
         with open('server.config') as file:
             config_dict = json.load(file)
         self.server_is_local = config_dict['is_local']
-        self.port = config_dict['port']
-        self.pipelines_count = config_dict['pipelines_count']
+        self.port = int(config_dict['port'])
+        self.pipelines_count = int(config_dict['pipelines_count'])
         self.api = self.api_list[config_dict['default_api']]
 
     def start_server(self):
@@ -77,12 +75,14 @@ class Server(metaclass=singleton3.Singleton):
             print('[error]: Cannot stop server. Is it running?')
 
     def execute_command(self, text):
-        command_text = ' '.join(text.split()[:2])
-        args_list = text.split()[2:]
-        try:
-            return self.commands[command_text](*args_list)
-        except Exception as ex:
-            return f'[error]: {str(ex)}'
+        if text:
+            try:
+                command_text = ' '.join(text.split()[:2])
+                args_list = text.split()[2:]
+                (prefix, message) = self.commands[command_text](*args_list)
+                return f'[{prefix}]: {message}'
+            except Exception:
+                return '[error]: Incorrect command.'
 
     def start_bot(self):
         try:
@@ -92,18 +92,22 @@ class Server(metaclass=singleton3.Singleton):
                     self.bot.create_pipeline()
                 self.bot.start_bot()
                 self.bot_running = True
-                return '[success]: Bot is running.'
+                return ('success', 'Bot is running.')
+            else:
+                return ('error', 'Bot is already running.')
         except Exception:
-            raise ServerRequestError('Cannot start bot.')
+            return ('error', 'Cannot start bot.')
 
     def stop_bot(self):
         try:
             if self.bot_running:
                 self.bot.stop_bot()
                 self.bot_running = False
-                return '[success]: Bot stopped.'
+                return ('success', 'Bot stopped.')
+            else:
+                return ('error', 'Bot is not running now.')
         except Exception:
-            raise ServerRequestError('Cannot stop bot.')
+            return ('error', 'Cannot stop bot.')
 
     def restart_bot(self):
         try:
@@ -114,17 +118,20 @@ class Server(metaclass=singleton3.Singleton):
                 for _ in range(self.pipelines_count):
                     self.bot.create_pipeline()
                 self.start_bot()
-                return '[success]: Bot restarted.'
+                return ('success', 'Bot restarted.')
+            else:
+                return ('error', 'Bot is not running now.')
         except Exception:
-            raise ServerRequestError('Cannot restart bot.')
+            return ('error', 'Cannot restart bot.')
 
     def set_pipelines(self, number):
-        self.pipelines_count = number
-        return '[success]: Pipelines count set to {number}. Restart to apply changes.'
+        self.pipelines_count = int(number)
+        return ('success', f'Pipelines count set to {number}. Restart to apply changes.')
+        
 
     def set_api(self, api_name):
         try:
             self.api = self.api_list[api_name]
-            return f'[success]: API set to {api_name}'
+            return ('success', f'API set to {api_name}')
         except KeyError:
-            raise ServerRequestError('Cannot set API. Are you sure its name is correct?')
+            return ('error', 'Cannot set API. Are you sure its name is correct?')
