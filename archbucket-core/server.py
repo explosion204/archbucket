@@ -16,7 +16,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         try:
-            data = self.request.recv(1024)
+            data = self.request.recv()
         except ConnectionResetError:
             # logging manipulations will be added
             return
@@ -91,13 +91,13 @@ class Server(metaclass=singleton3.Singleton):
 
     def execute_command(self, text):
         if text:
-            try:
-                command_text = ' '.join(text.split()[:2])
-                args_list = text.split()[2:]
-                (prefix, message) = self.commands[command_text](*args_list)
-                return f'[{prefix}]: {message}'
-            except Exception:
-                return '[error]: Incorrect command.'
+            #try:
+            command_text = ' '.join(text.split()[:2])
+            args_list = text.split()[2:]
+            (prefix, message) = self.commands[command_text](*args_list)
+            return f'[{prefix}]: {message}'
+            # except Exception:
+            #     return '[error]: Incorrect command.'
 
     def start_bot(self):
         try:
@@ -163,7 +163,7 @@ class Server(metaclass=singleton3.Singleton):
 
     def vaidate_module(self, module_name):
         (status, msg) = self.bot.request_router.validate(module_name)
-        if status == True:
+        if status == False:
             return ('error', msg)
         else:
             return ('success', msg)
