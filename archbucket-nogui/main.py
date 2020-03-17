@@ -25,6 +25,7 @@ if ip != 'localhost':
             break
 
 import socket
+from os.path import exists
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((ip, int(port)))
@@ -39,5 +40,18 @@ while True:
         connection = sock.connect((ip, int(port)))
         command = input('>')
         if command:
+            if command.startswith('import module'):
+                path = command.split()[3]
+                if exists(path):
+                    command = ' '.join(command.split()[:3])
+                    with open(path, 'r') as f:
+                        command += ' ' + f.read()
             sock.send(command.encode())
-            print(sock.recv(1024).decode())
+            sock.shutdown(socket.SHUT_WR)
+            response = str()
+            while True:
+                data = sock.recv(1024).decode()
+                if not data:
+                    break
+                response += data
+            print(response)

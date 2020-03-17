@@ -15,12 +15,17 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 # request handler
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
+        recieved_data = str()
         try:
-            data = self.request.recv()
+            while True:
+                partial_data = self.request.recv(1024).decode()
+                if not partial_data:
+                    break
+                recieved_data += partial_data
         except ConnectionResetError:
             # logging manipulations will be added
             return
-        response = Server().execute_command(data.decode())
+        response = Server().execute_command(recieved_data)
         # notify client about request status
         if response:
             self.request.sendall(response.encode())
@@ -51,7 +56,7 @@ class Server(metaclass=singleton3.Singleton):
             'set pipelines': self.set_pipelines,
             'set api': self.set_api,
             'get modules': self.get_modules,
-            'validate module': self.vaidate_module,
+            'import module': self.import_module,
             'help': self.get_help
         }
 
@@ -91,13 +96,12 @@ class Server(metaclass=singleton3.Singleton):
 
     def execute_command(self, text):
         if text:
-            #try:
+            # try:
             command_text = ' '.join(text.split()[:2])
-            args_list = text.split()[2:]
-            (prefix, message) = self.commands[command_text](*args_list)
+            (prefix, message) = self.commands[command_text](text.partition(command_text)[2].lstrip())
             return f'[{prefix}]: {message}'
             # except Exception:
-            #     return '[error]: Incorrect command.'
+            #    return '[error]: Incorrect command.'
 
     def start_bot(self):
         try:
@@ -161,8 +165,10 @@ class Server(metaclass=singleton3.Singleton):
         repr_str = repr_str.replace(', ', ' ')
         return ('info', repr_str)
 
-    def vaidate_module(self, module_name):
-        (status, msg) = self.bot.request_router.validate(module_name)
+    def import_module(self, arg):
+        module_name = arg.partition(' ')[0]
+        source_code = arg.partition(' ')[2]
+        (status, msg) = self.bot.request_router.validate(module_name, source_code)
         if status == False:
             return ('error', msg)
         else:

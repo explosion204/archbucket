@@ -47,29 +47,17 @@ class RequestRouter:
         if not session_exit:
             self.sessions[request.id] = request.command
 
-    def validate(self, module_name) -> (bool, str):
-        return (False, 'null')
-        # # 1st: check for existence
-        # if not exists(f'core/modules/{module_name}.py'):
-        #     return (False, f"Module '{module_name}' cannot be find in 'core/modules.")
-        # with open(f'core/modules/{module_name}.py', 'r') as file:
-        #     source_code = file.read()
-        # # 2nd: check for syntax errors
-        # try:
-        #     ast.parse(source_code)
-        # except SyntaxError:
-        #     return (False, 'Syntax error.')
-        # # 3rd: check if module has required callable attribute 'run'
-        # pattern = r'def run(.*)'
-        # if not re.match(pattern, source_code):
-        #     return (False, f"Module '{module_name}' has no callable attribute with name 'run' which takes one argument.")
-        # # 4th: check return value of 'run'
-        # pattern = r'def run\((.|\n)*\)(.|\n)*return (False|Return)'
-        # if not re.search(pattern, source_code):
-        #     return (False, "'run' function does not return True nor False.")
-        # # successful validation
+    def validate(self, module_name, source_code) -> (bool, str):
+        try:
+             ast.parse(source_code)
+        except SyntaxError:
+            return (False, 'Syntax error.')
+        pattern = r'def run\((.|\n)*\)(.|\n)*return (False|True)'
+        if not re.search(pattern, source_code):
+             return (False, "Module has no callable attribute 'run' which return True or False.")
+        # successful validation
         # with open('core/modules/.modules', 'r+') as file:
         #     modules_list = json.load(file)
         #     modules_list.append(module_name)
         #     json.dump(modules_list, file)
-        # return (True, f"Module '{module_name}' has been successfully validated. Restart bot to begin using it.")
+        return (True, f"Module '{module_name}' has been successfully validated.")
