@@ -7,6 +7,7 @@ import api.telegram.telegram_api as telegram_api
 from core.bot import Bot
 from queue import Queue
 from importlib import import_module
+from os.path import exists
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
@@ -160,8 +161,12 @@ class Server(metaclass=singleton3.Singleton):
         repr_str = repr_str.replace(', ', ' ')
         return ('info', repr_str)
 
-    def vaidate_module(self):
-        pass
+    def vaidate_module(self, module_name):
+        (status, msg) = self.bot.request_router.validate(module_name)
+        if status == True:
+            return ('error', msg)
+        else:
+            return ('success', msg)
 
     def get_help(self):
         pass
