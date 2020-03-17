@@ -153,7 +153,12 @@ class Server(metaclass=singleton3.Singleton):
         return ('info', 'Bot is running.') if self.bot_running else ('info', 'Bot is not running.')
 
     def get_modules(self):
-        pass
+        with open('core/modules/.modules') as file:
+            validated_modules = json.load(file)
+        repr_str = repr(validated_modules).replace('[', '')
+        repr_str = repr_str.replace(']', '')
+        repr_str = repr_str.replace(', ', ' ')
+        return ('info', repr_str)
 
     def vaidate_module(self):
         pass
