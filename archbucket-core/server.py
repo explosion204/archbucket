@@ -96,12 +96,13 @@ class Server(metaclass=singleton3.Singleton):
 
     def execute_command(self, text):
         if text:
-            # try:
-            command_text = ' '.join(text.split()[:2])
-            (prefix, message) = self.commands[command_text](text.partition(command_text)[2].lstrip())
-            return f'[{prefix}]: {message}'
-            # except Exception:
-            #    return '[error]: Incorrect command.'
+            try:
+                command_text = ' '.join(text.split()[:2])
+                args_list = text.split(' ')[2:]
+                (prefix, message) = self.commands[command_text](*args_list)
+                return f'[{prefix}]: {message}'
+            except Exception:
+               return '[error]: Incorrect command.'
 
     def start_bot(self):
         try:
@@ -160,14 +161,14 @@ class Server(metaclass=singleton3.Singleton):
     def get_modules(self):
         with open('core/modules/.modules') as file:
             validated_modules = json.load(file)
-        repr_str = repr(validated_modules).replace('[', '')
-        repr_str = repr_str.replace(']', '')
+        repr_str = repr(validated_modules).replace('{', '')
+        repr_str = repr_str.replace('}', '')
         repr_str = repr_str.replace(', ', ' ')
         return ('info', repr_str)
 
-    def import_module(self, arg):
-        module_name = arg.partition(' ')[0]
-        source_code = arg.partition(' ')[2]
+    def import_module(self, *args):
+        module_name = args[0]
+        source_code = ' '.join(args[1:])
         (status, msg) = self.bot.request_router.validate(module_name, source_code)
         if status == False:
             return ('error', msg)

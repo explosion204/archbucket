@@ -5,10 +5,6 @@ import re
 import json
 import ast
 
-import sys
-import os
-sys.path.append(os.getcwd())
-
 class Request:
     def __init__(self, id: int, request_type: str, command: str, args: list):
         self.id = id
@@ -24,7 +20,7 @@ class RequestRouter:
         # Load names of modules
         with open('core/modules/.modules', 'r') as file:
             names = json.load(file)
-            self.modules = {name: import_module(f"core.modules.{name}") for name in names}
+            self.modules = {name: import_module(f"core.modules.{name}") for name in names.keys() if names[name] == 'enabled'}
 
     def route(self, request: Request):
         command = request.command
@@ -54,10 +50,10 @@ class RequestRouter:
             return (False, 'Syntax error.')
         pattern = r'def run\((.|\n)*\)(.|\n)*return (False|True)'
         if not re.search(pattern, source_code):
-             return (False, "Module has no callable attribute 'run' which return True or False.")
+             return (False, "Module has no callable attribute 'run' which returns True or False.")
         # successful validation
         # with open('core/modules/.modules', 'r+') as file:
         #     modules_list = json.load(file)
         #     modules_list.append(module_name)
         #     json.dump(modules_list, file)
-        return (True, f"Module '{module_name}' has been successfully validated.")
+        return (True, f"Module '{module_name}' has been successfully imported.")
