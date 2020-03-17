@@ -14,7 +14,11 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 # request handler
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
-        data = self.request.recv(1024)
+        try:
+            data = self.request.recv(1024)
+        except ConnectionResetError:
+            # logging manipulations will be added
+            return
         response = Server().execute_command(data.decode())
         # notify client about request status
         if response:
@@ -146,7 +150,7 @@ class Server(metaclass=singleton3.Singleton):
             return ('error', 'Cannot set API. Are you sure its name is correct?')
 
     def get_bot_status(self):
-        pass
+        return ('info', 'Bot is running.') if self.bot_running else ('info', 'Bot is not running.')
 
     def get_modules(self):
         pass
