@@ -27,16 +27,8 @@ class Server(metaclass=singleton3.Singleton):
         self.server_started = False
         self.bot_running = False
         self.bot = Bot()
-        self.commands = {
-            'bot start': self.start_bot,
-            'bot stop': self.stop_bot,
-            'bot restart': self.restart_bot,
-            'pipelines set': self.set_pipelines,
-            'api set': self.set_api
-        }
-        self.api_list = {
-            'telegram': telegram_api.TelegramAPI
-        }
+        self.init_commands()
+        self.init_api_list()
         # configuring class
         with open('server.config') as file:
             config_dict = json.load(file)
@@ -44,6 +36,24 @@ class Server(metaclass=singleton3.Singleton):
         self.port = int(config_dict['port'])
         self.pipelines_count = int(config_dict['pipelines_count'])
         self.api = self.api_list[config_dict['default_api']]
+
+    def init_commands(self):
+        self.commands = {
+            'bot start': self.start_bot,
+            'bot stop': self.stop_bot,
+            'bot restart': self.restart_bot,
+            'bot status': self.get_bot_status,
+            'set pipelines': self.set_pipelines,
+            'set api': self.set_api,
+            'get modules': self.get_modules,
+            'validate module': self.vaidate_module,
+            'help': self.get_help
+        }
+
+    def init_api_list(self):
+        self.api_list = {
+            'telegram': telegram_api.TelegramAPI
+        }
 
     def start_server(self):
         if self.server_configured:
@@ -126,8 +136,7 @@ class Server(metaclass=singleton3.Singleton):
 
     def set_pipelines(self, number):
         self.pipelines_count = int(number)
-        return ('success', f'Pipelines count set to {number}. Restart to apply changes.')
-        
+        return ('success', f'Pipelines count set to {number}. Restart to apply changes.') 
 
     def set_api(self, api_name):
         try:
@@ -135,3 +144,15 @@ class Server(metaclass=singleton3.Singleton):
             return ('success', f'API set to {api_name}')
         except KeyError:
             return ('error', 'Cannot set API. Are you sure its name is correct?')
+
+    def get_bot_status(self):
+        pass
+
+    def get_modules(self):
+        pass
+
+    def vaidate_module(self):
+        pass
+
+    def get_help(self):
+        pass
