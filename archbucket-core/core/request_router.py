@@ -43,7 +43,7 @@ class RequestRouter:
         if not session_exit:
             self.sessions[request.id] = request.command
 
-    def validate(self, module_name, source_code) -> (bool, str):
+    def import_module(self, module_name, source_code) -> (bool, str):
         try:
              ast.parse(source_code)
         except SyntaxError:
@@ -60,3 +60,6 @@ class RequestRouter:
         with open(f'core/modules/{module_name}.py', 'w') as file:
             file.write(source_code)
         return (True, f"Module '{module_name}' has been successfully imported.")
+
+    def remove_module(self, module_name):
+        pass

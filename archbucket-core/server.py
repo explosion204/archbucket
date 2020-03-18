@@ -57,6 +57,7 @@ class Server(metaclass=singleton3.Singleton):
             'set api': self.set_api,
             'get modules': self.get_modules,
             'import module': self.import_module,
+            'remove module': self.remove_module,
             'help': self.get_help
         }
 
@@ -161,19 +162,19 @@ class Server(metaclass=singleton3.Singleton):
     def get_modules(self):
         with open('core/modules/.modules') as file:
             validated_modules = json.load(file)
-        repr_str = repr(validated_modules).replace('{', '')
-        repr_str = repr_str.replace('}', '')
-        repr_str = repr_str.replace(', ', ' ')
-        return ('info', repr_str)
+        return ('info', repr(validated_modules))
 
     def import_module(self, *args):
         module_name = args[0]
         source_code = ' '.join(args[1:])
-        (status, msg) = self.bot.request_router.validate(module_name, source_code)
+        (status, msg) = self.bot.request_router.import_module(module_name, source_code)
         if status == False:
             return ('error', msg)
         else:
             return ('success', msg)
+
+    def remove_module(self, module_name):
+        pass
 
     def get_help(self):
         pass
