@@ -4,6 +4,7 @@ from inspect import signature
 import re
 import json
 import ast
+import os
 
 class Request:
     def __init__(self, id: int, request_type: str, command: str, args: list):
@@ -17,7 +18,7 @@ class RequestRouter:
     def __init__(self):
         self.modules = dict()
         self.sessions = dict()
-        # Load names of modules
+        # Load enabled modules
         with open('core/modules/.modules', 'r') as file:
             names = json.load(file)
             self.modules = {name: import_module(f"core.modules.{name}") for name in names.keys() if names[name] == 'enabled'}
@@ -59,7 +60,16 @@ class RequestRouter:
             json.dump(modules_dict, file)
         with open(f'core/modules/{module_name}.py', 'w') as file:
             file.write(source_code)
-        return (True, f"Module '{module_name}' has been successfully imported.")
+        return (True, f"Module '{module_name}' successfully imported. Restart bot to apply changes.")
 
     def remove_module(self, module_name):
-        pass
+        with open('core/modules/.modules', 'r') as file:
+            modules_dict = json.load(file)
+            if module_name in modules_dict.keys():
+                os.remove(f'core/modules/{module_name}.py')
+                del modules_dict[module_name]
+            else:
+                return (False, f"Cannot find module '{module_name}'")
+        with open('core/modules/.modules', 'w') as file:
+            json.dump(modules_dict, file)
+        return (True, f"Module '{module_name} successfully removed. Restart bot to apply changes.'")

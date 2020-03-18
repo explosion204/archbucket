@@ -174,7 +174,11 @@ class Server(metaclass=singleton3.Singleton):
             return ('success', msg)
 
     def remove_module(self, module_name):
-        pass
+        (status, msg) = self.bot.request_router.remove_module(module_name)
+        if status == False:
+            return ('error', msg)
+        else:
+            return ('success', msg)
 
     def get_help(self):
         pass
