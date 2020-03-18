@@ -137,7 +137,7 @@ class Server(metaclass=singleton3.Singleton):
                 self.bot.set_api(self.api)
                 for _ in range(self.pipelines_count):
                     self.bot.create_pipeline()
-                self.start_bot()
+                self.bot.start_bot()
                 return ('success', 'Bot restarted.')
             else:
                 return ('error', 'Bot is not running now.')

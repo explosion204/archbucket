@@ -52,8 +52,11 @@ class RequestRouter:
         if not re.search(pattern, source_code):
              return (False, "Module has no callable attribute 'run' which returns True or False.")
         # successful validation
-        # with open('core/modules/.modules', 'r+') as file:
-        #     modules_list = json.load(file)
-        #     modules_list.append(module_name)
-        #     json.dump(modules_list, file)
+        with open('core/modules/.modules', 'r') as file:
+            modules_dict = json.load(file)
+            modules_dict[module_name] = 'disabled'
+        with open('core/modules/.modules', 'w') as file:
+            json.dump(modules_dict, file)
+        with open(f'core/modules/{module_name}.py', 'w') as file:
+            file.write(source_code)
         return (True, f"Module '{module_name}' has been successfully imported.")
