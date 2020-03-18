@@ -58,6 +58,8 @@ class Server(metaclass=singleton3.Singleton):
             'get modules': self.get_modules,
             'import module': self.import_module,
             'remove module': self.remove_module,
+            'enable module': self.enable_module,
+            'disable module': self.disable_module,
             'help': self.get_help
         }
 
@@ -175,6 +177,20 @@ class Server(metaclass=singleton3.Singleton):
 
     def remove_module(self, module_name):
         (status, msg) = self.bot.request_router.remove_module(module_name)
+        if status == False:
+            return ('error', msg)
+        else:
+            return ('success', msg)
+
+    def enable_module(self, module_name):
+        (status, msg) = self.bot.request_router.enable_module(module_name)
+        if status == False:
+            return ('error', msg)
+        else:
+            return ('success', msg)
+
+    def disable_module(self, module_name):
+        (status, msg) = self.bot.request_router.disable_module(module_name)
         if status == False:
             return ('error', msg)
         else:

@@ -69,7 +69,29 @@ class RequestRouter:
                 os.remove(f'core/modules/{module_name}.py')
                 del modules_dict[module_name]
             else:
-                return (False, f"Cannot find module '{module_name}'")
+                return (False, f"Cannot find module '{module_name}'.")
         with open('core/modules/.modules', 'w') as file:
             json.dump(modules_dict, file)
-        return (True, f"Module '{module_name} successfully removed. Restart bot to apply changes.'")
+        return (True, f"Module '{module_name}'' successfully removed. Restart bot to apply changes.")
+
+    def enable_module(self, module_name):
+        with open('core/modules/.modules', 'r') as file:
+            modules_dict = json.load(file)
+            if module_name in modules_dict.keys():
+                modules_dict[module_name] = 'enabled'
+            else:
+                return (False, f"Cannot find module '{module_name}'.")
+        with open('core/modules/.modules', 'w') as file:
+            json.dump(modules_dict, file)
+        return (True, f"Module '{module_name}' successfully enabled. Restart bot to apply changes.")
+
+    def disable_module(self, module_name):
+        with open('core/modules/.modules', 'r') as file:
+            modules_dict = json.load(file)
+            if module_name in modules_dict.keys():
+                modules_dict[module_name] = 'disabled'
+            else:
+                return (False, f"Cannot find module '{module_name}'.")
+        with open('core/modules/.modules', 'w') as file:
+            json.dump(modules_dict, file)
+        return (True, f"Module '{module_name}' successfully disabled. Restart bot to apply changes.")
