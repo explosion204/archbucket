@@ -55,6 +55,7 @@ class Server(metaclass=singleton3.Singleton):
             'bot status': self.get_bot_status,
             'set pipelines': self.set_pipelines,
             'set api': self.set_api,
+            'set port': self.set_port,
             'get modules': self.get_modules,
             'import module': self.import_module,
             'remove module': self.remove_module,
@@ -71,8 +72,6 @@ class Server(metaclass=singleton3.Singleton):
     def start_server(self):
         if self.server_configured:
             self.server_thread.start()
-            if not self.server_is_local:
-                ip = get('https://api.ipify.org').text
             ip = get('https://api.ipify.org').text if not self.server_is_local and self.check_connection() else self.server.server_address[0]
             # local case: print internal ip; nonlocal case: print external ip (router)
             print(f'[success]: Server started with address: {ip}:{self.server.server_address[1]}')
@@ -169,6 +168,13 @@ class Server(metaclass=singleton3.Singleton):
             return ('success', f'API set to {api_name}')
         except KeyError:
             return ('error', 'Cannot set API. Are you sure its name is correct?')
+
+    def set_port(self, port):
+        if port > 65535:
+            return ('error', 'Invalid port value.')
+        else:
+            self.port = port
+            return ('success', 'Port set successfully.')
 
     def get_bot_status(self):
         return ('info', 'Bot is running.') if self.bot_running else ('info', 'Bot is not running.')
