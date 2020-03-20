@@ -5,7 +5,7 @@ from server import Server
 def main():
     # config set up
     if not exists('server.config'):
-        json_dict = {'is_local': True, 'port': 1111, 'pipelines_count': 1, 'default_api': 'telegram'}
+        json_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram'}
         with open('server.config', 'w') as file:
             json.dump(json_dict, file)
     # set up server

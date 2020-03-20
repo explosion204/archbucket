@@ -5,9 +5,9 @@ import json
 import singleton3
 import api.telegram.telegram_api as telegram_api
 from core.bot import Bot
-from queue import Queue
-from importlib import import_module
-from os.path import exists
+from urllib.request import urlopen
+from urllib.error import URLError
+from requests import get
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
@@ -71,23 +71,35 @@ class Server(metaclass=singleton3.Singleton):
     def start_server(self):
         if self.server_configured:
             self.server_thread.start()
-            print('[success]: Server started.')
+            if not self.server_is_local:
+                ip = get('https://api.ipify.org').text
+            ip = get('https://api.ipify.org').text if not self.server_is_local and self.check_connection() else self.server.server_address[0]
+            # local case: print internal ip; nonlocal case: print external ip (router)
+            print(f'[success]: Server started with address: {ip}:{self.server.server_address[1]}')
             self.server_started = True
         else:
             print('[error]: Server has not been configured yet.')
 
     def configure_server(self):
         try:
-            # getting internal ip of machine
-            self.ip = socket.gethostbyname(socket.gethostname()) if not self.server_is_local else '0.0.0.0'
+            ip = socket.gethostbyname(socket.gethostname())
+            # local case: pick any free port
+            port = 0 if self.server_is_local else self.port
             # configuring server
-            self.server = ThreadedTCPServer((self.ip, self.port), ThreadedTCPRequestHandler)
+            self.server = ThreadedTCPServer((ip, port), ThreadedTCPRequestHandler)
             self.server_thread = threading.Thread(target=self.server.serve_forever)
         except Exception:
             print('[error]: Cannot initialize server.')
             return
         print('[success]: Server configured.')
         self.server_configured = True
+
+    def check_connection(self):
+        try:
+            urlopen('http://216.58.192.142', timeout = 1)
+            return True
+        except URLError: 
+            return False
 
     def stop_server(self):
         if self.server_started:
