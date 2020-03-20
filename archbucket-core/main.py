@@ -1,4 +1,5 @@
 import json
+import atexit
 from os.path import exists
 from server import Server
 
@@ -9,9 +10,12 @@ def main():
         with open('server.config', 'w') as file:
             json.dump(json_dict, file)
     # set up server
-    server = Server()
-    server.configure_server()
-    server.start_server()
+    atexit.register()
+    Server().configure_server()
+    Server().start_server()
     
+def exit_handler():
+    Server().stop_server()
+
 if __name__ == '__main__':
     main()

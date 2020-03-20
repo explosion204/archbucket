@@ -104,7 +104,15 @@ class Server(metaclass=singleton3.Singleton):
         if self.server_started:
             self.server.shutdown()
             self.server.server_close()
-            print('[success]: Server stopped.')
+            with open('server.config', 'r') as file:
+                config_dict = json.load(file)
+                config_dict['is_local'] = True
+                config_dict['port'] = self.port
+                config_dict['pipelines_count'] = self.pipelines_count
+                config_dict['default_api'] = self.api
+            with open('server.config', 'w') as file:
+                json.dump(config_dict, file)
+            print('[success]: Server stopped. Config changes saved.')
         else:
             print('[error]: Cannot stop server. Is it running?')
 
@@ -174,7 +182,7 @@ class Server(metaclass=singleton3.Singleton):
             return ('error', 'Invalid port value.')
         else:
             self.port = port
-            return ('success', 'Port set successfully.')
+            return ('success', 'Port set successfully. Restart server to apply changes.')
 
     def get_bot_status(self):
         return ('info', 'Bot is running.') if self.bot_running else ('info', 'Bot is not running.')
