@@ -3,6 +3,9 @@ import atexit
 from os.path import exists
 from server import Server
 
+def exit_handler():
+    Server().stop_server()
+
 def main():
     # config set up
     if not exists('server.config'):
@@ -10,12 +13,9 @@ def main():
         with open('server.config', 'w') as file:
             json.dump(json_dict, file)
     # set up server
-    atexit.register()
+    atexit.register(exit_handler)
     Server().configure_server()
     Server().start_server()
-    
-def exit_handler():
-    Server().stop_server()
 
 if __name__ == '__main__':
     main()
