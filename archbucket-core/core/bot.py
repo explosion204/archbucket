@@ -1,7 +1,6 @@
 from core.request_router import RequestRouter, Request
 from core.pipeline import Pipeline
 from threading import Thread
-from api.abstract_api import AbstractAPI
 
 class Bot:
     def __init__(self):
@@ -19,11 +18,9 @@ class Bot:
         pipeline_thread = Thread(target=new_pipeline.start)
         pipeline_thread.start()
 
-    def set_api(self, bot_api: type(AbstractAPI)):
-        self.bot_api = bot_api(self)
-
-    def start_bot(self):
-        self.bot_api.start()
+    def start_bot(self, bot_api):
+        self.bot_api = bot_api
+        self.bot_api.start(self)
 
     def stop_bot(self):
         self.bot_api.stop()

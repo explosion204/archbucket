@@ -3,7 +3,7 @@ import socketserver
 import socket
 import json
 import singleton3
-import api.telegram.telegram_api as telegram_api
+import importlib
 from core.bot import Bot
 from urllib.request import urlopen
 from urllib.error import URLError
@@ -36,7 +36,6 @@ class Server(metaclass=singleton3.Singleton):
         self.server_configured = False
         self.server_started = False
         self.bot_running = False
-        self.bot = Bot()
         self.init_commands()
         self.init_api_list()
         # configuring class
@@ -45,7 +44,7 @@ class Server(metaclass=singleton3.Singleton):
         self.server_is_local = config_dict['is_local']
         self.port = int(config_dict['port'])
         self.pipelines_count = int(config_dict['pipelines_count'])
-        self.api = self.api_list[config_dict['default_api']]
+        self.api = config_dict['default_api']
 
     def init_commands(self):
         self.commands = {
@@ -61,13 +60,13 @@ class Server(metaclass=singleton3.Singleton):
             'remove module': self.remove_module,
             'enable module': self.enable_module,
             'disable module': self.disable_module,
+            'shutdown': self.stop_server,
             'help': self.get_help
         }
 
     def init_api_list(self):
-        self.api_list = {
-            'telegram': telegram_api.TelegramAPI
-        }
+        with open('core//api//.api', 'r') as file:
+            self.api_list = json.load(file)
 
     def start_server(self):
         if self.server_configured:
@@ -109,7 +108,7 @@ class Server(metaclass=singleton3.Singleton):
                 config_dict['is_local'] = True
                 config_dict['port'] = self.port
                 config_dict['pipelines_count'] = self.pipelines_count
-                config_dict['default_api'] = self.api
+                config_dict['default_api'] = self.api.get_name()
             with open('server.config', 'w') as file:
                 json.dump(config_dict, file)
             print('[success]: Server stopped. Config changes saved.')
@@ -129,10 +128,19 @@ class Server(metaclass=singleton3.Singleton):
     def start_bot(self):
         try:
             if self.api and not self.bot_running:
-                self.bot.set_api(self.api)
+                # new instance of Bot class
+                self.bot = Bot()
+                # retrieve class name and token from API list
+                (class_name, auth_token, api_type) = self.api_list[self.api]
+                # importing API class
+                api_module = importlib.import_module(f'core.api.{self.api}')
+                # new instance of API with auth token passed
+                api_instance = eval(f'api_module.{class_name}("{auth_token}")')
+                # setting proccessing pipelines
                 for _ in range(self.pipelines_count):
                     self.bot.create_pipeline()
-                self.bot.start_bot()
+                # pass API instance to start function
+                self.bot.start_bot(api_instance)
                 self.bot_running = True
                 return ('success', 'Bot is running.')
             else:
@@ -154,12 +162,8 @@ class Server(metaclass=singleton3.Singleton):
     def restart_bot(self):
         try:
             if self.bot_running:
-                self.bot.stop_bot()
-                self.bot = Bot()
-                self.bot.set_api(self.api)
-                for _ in range(self.pipelines_count):
-                    self.bot.create_pipeline()
-                self.bot.start_bot()
+                self.stop_bot()
+                self.start_bot()
                 return ('success', 'Bot restarted.')
             else:
                 return ('error', 'Bot is not running now.')

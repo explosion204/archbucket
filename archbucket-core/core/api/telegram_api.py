@@ -1,26 +1,32 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters
 import api.telegram.telegram_config as config
-from api.abstract_api import AbstractAPI
 from core.bot import Bot
 from core.request_router import Request
 from time import sleep
 
-class TelegramAPI(AbstractAPI):
-    def __init__(self, core_bot):
-        self.bot = telegram.Bot(token=config.TOKEN)
-        self.core_bot = core_bot
-        self.updater = Updater(token=config.TOKEN, use_context=True)
+class TelegramAPI:
+    def __init__(self, auth_token):
+        self.bot = telegram.Bot(token=auth_token)
+        self.updater = Updater(token=auth_token, use_context=True)
         self.dispatcher = self.updater.dispatcher
         self.dispatcher.add_handler(MessageHandler(Filters.text, self.listen))
         self.dispatcher.add_handler(MessageHandler(Filters.photo, self.listen))
         self.delay = 0.3 # 300 ms
     
-    def start(self):
+    def start(self, core_bot):
+        self.core_bot = core_bot
         self.updater.start_polling()
         
     def stop(self):
         self.updater.stop()
+
+    def send_response(self, request: Request):
+        if request.request_type == 'text' and not request.response == '':
+            self.bot.send_message(chat_id=request.id, text=request.response)
+
+    def get_name(self):
+        return 'telegram'
 
     def listen(self, update, context):
         message = update.effective_message
@@ -31,7 +37,3 @@ class TelegramAPI(AbstractAPI):
             sleep(self.delay)
         if message.caption and len(message.photo) != 0:
             print('photo with caption')
-
-    def send_response(self, request: Request):
-        if request.request_type == 'text' and not request.response == '':
-            self.bot.send_message(chat_id=request.id, text=request.response)
