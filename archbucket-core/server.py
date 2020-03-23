@@ -4,6 +4,7 @@ import socket
 import json
 import singleton3
 import importlib
+from os.path import exists
 from core.bot import Bot
 from urllib.request import urlopen
 from urllib.error import URLError
@@ -38,13 +39,18 @@ class Server(metaclass=singleton3.Singleton):
         self.bot_running = False
         self.init_commands()
         self.init_api_list()
+        # default config
+        if not exists('server.config'):
+            config_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram'}
+            with open('server.config', 'w') as file:
+                json.dump(config_dict, file)
         # configuring class
         with open('server.config') as file:
             config_dict = json.load(file)
         self.server_is_local = config_dict['is_local']
         self.port = int(config_dict['port'])
         self.pipelines_count = int(config_dict['pipelines_count'])
-        self.api = config_dict['default_api']
+        self.api_name = config_dict['default_api']
 
     def init_commands(self):
         self.commands = {
@@ -54,13 +60,20 @@ class Server(metaclass=singleton3.Singleton):
             'bot status': self.get_bot_status,
             'set pipelines': self.set_pipelines,
             'set api': self.set_api,
+            'get api': self.get_api,
             'set port': self.set_port,
             'get modules': self.get_modules,
             'import module': self.import_module,
             'remove module': self.remove_module,
             'enable module': self.enable_module,
             'disable module': self.disable_module,
-            'shutdown': self.stop_server,
+            'import api': 'to implement',
+            'remove api': 'to implement',
+            'get apis': 'to implement',
+            'shutdown': 'to implement',
+            'run locally': self.run_locally,
+            'run globally': self.run_globally,
+            'server status': self.get_server_status,
             'help': self.get_help
         }
 
@@ -103,14 +116,6 @@ class Server(metaclass=singleton3.Singleton):
         if self.server_started:
             self.server.shutdown()
             self.server.server_close()
-            with open('server.config', 'r') as file:
-                config_dict = json.load(file)
-                config_dict['is_local'] = True
-                config_dict['port'] = self.port
-                config_dict['pipelines_count'] = self.pipelines_count
-                config_dict['default_api'] = self.api.get_name()
-            with open('server.config', 'w') as file:
-                json.dump(config_dict, file)
             print('[success]: Server stopped. Config changes saved.')
         else:
             print('[error]: Cannot stop server. Is it running?')
@@ -127,13 +132,13 @@ class Server(metaclass=singleton3.Singleton):
 
     def start_bot(self):
         try:
-            if self.api and not self.bot_running:
+            if self.api_name and not self.bot_running:
                 # new instance of Bot class
                 self.bot = Bot()
                 # retrieve class name and token from API list
-                (class_name, auth_token, api_type) = self.api_list[self.api]
+                (class_name, auth_token, api_type) = self.api_list[self.api_name]
                 # importing API class
-                api_module = importlib.import_module(f'core.api.{self.api}')
+                api_module = importlib.import_module(f'core.api.{self.api_name}')
                 # new instance of API with auth token passed
                 api_instance = eval(f'api_module.{class_name}("{auth_token}")')
                 # setting proccessing pipelines
@@ -171,15 +176,22 @@ class Server(metaclass=singleton3.Singleton):
             return ('error', 'Cannot restart bot.')
 
     def set_pipelines(self, number):
-        self.pipelines_count = int(number)
-        return ('success', f'Pipelines count set to {number}. Restart to apply changes.') 
+        if int(number) > 0:
+            self.pipelines_count = int(number)
+            self.save_config()
+            return ('success', f'Pipelines count set to {number}. Restart to apply changes.') 
+        else:
+            return ('error', 'Number of pipelines cannot be less then 1')
 
     def set_api(self, api_name):
-        try:
-            self.api = self.api_list[api_name]
+        if api_name in self.api_list.keys():
+            self.api_name = api_name
             return ('success', f'API set to {api_name}')
-        except KeyError:
+        else:
             return ('error', 'Cannot set API. Are you sure its name is correct?')
+
+    def get_api(self):
+        return ('info', f'{self.api_name}')
 
     def set_port(self, port):
         if port > 65535:
@@ -225,6 +237,42 @@ class Server(metaclass=singleton3.Singleton):
             return ('error', msg)
         else:
             return ('success', msg)
+
+    def run_locally(self):
+        if not self.server_is_local:
+            self.server_is_local = True
+            return ('success', 'Server switched to local running. Restart to apply changes.')
+        else:
+            return ('error', 'Server is already running locally.')
+
+    def run_globally(self):
+        if self.server_is_local:
+            self.server_is_local = False
+            return ('success', 'Server switched to global running. Restart to apply changes.')
+        else:
+            return ('error', 'Server is already running globally.')
+
+    def get_server_status(self):
+        if self.server_is_local:
+            return ('info', 'Server is running locally.')
+        else:
+            return ('info', 'Server is running globally.')
+
+    def save_config(self):
+        with open('server.config', 'r') as file:
+            config_dict = json.load(file)
+        config_dict['is_local'] = self.server_is_local
+        config_dict['port'] = self.port
+        config_dict['pipelines_count'] = self.pipelines_count
+        config_dict['default_api'] = self.api_name
+        with open('server.config', 'w') as file:
+            json.dump(config_dict, file)
+        
+    def restore_config(self):
+        json_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram_api'}
+        with open('server.config', 'w') as file:
+            json.dump(json_dict, file)
+
 
     def get_help(self):
         pass
