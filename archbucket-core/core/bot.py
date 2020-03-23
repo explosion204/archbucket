@@ -20,10 +20,16 @@ class Bot:
 
     def start_bot(self, bot_api):
         self.bot_api = bot_api
-        self.bot_api.start(self)
+        try:
+            self.bot_api.start(self)
+        except Exception:
+            pass
 
     def stop_bot(self):
-        self.bot_api.stop()
+        try:
+            self.bot_api.stop()
+        except Exception:
+            pass
 
     def send_response(self, request: Request):
         self.bot_api.send_response(request)
