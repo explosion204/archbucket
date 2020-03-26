@@ -4,8 +4,8 @@ import socket
 import json
 import singleton3
 import importlib
-from os.path import exists
-from core.bot import Bot
+import os
+from .bot import Bot
 from urllib.request import urlopen
 from urllib.error import URLError
 from requests import get
@@ -37,15 +37,17 @@ class Server(metaclass=singleton3.Singleton):
         self.server_configured = False
         self.server_started = False
         self.bot_running = False
+        # path to file with api list
+        self.core_path = os.path.dirname(__file__)
         self.init_commands()
         self.init_api_list()
         # default config
-        if not exists('server.config'):
+        if not os.path.exists(self.core_path + '/server.config'):
             config_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram'}
             with open('server.config', 'w') as file:
                 json.dump(config_dict, file)
         # configuring class
-        with open('server.config') as file:
+        with open(self.core_path + '/server.config') as file:
             config_dict = json.load(file)
         self.server_is_local = config_dict['is_local']
         self.port = int(config_dict['port'])
@@ -78,7 +80,7 @@ class Server(metaclass=singleton3.Singleton):
         }
 
     def init_api_list(self):
-        with open('core//api//.api', 'r') as file:
+        with open(self.core_path + '/api/.api', 'r') as file:
             self.api_list = json.load(file)
 
     def start_server(self):
@@ -128,7 +130,7 @@ class Server(metaclass=singleton3.Singleton):
                 (prefix, message) = self.commands[command_text](*args_list)
                 return f'[{prefix}]: {message}'
             except Exception:
-               return '[error]: Incorrect command.'
+                return '[error]: Incorrect command.'
 
     def start_bot(self):
         try:
@@ -138,7 +140,7 @@ class Server(metaclass=singleton3.Singleton):
                 # retrieve class name and token from API list
                 (class_name, auth_token, api_type) = self.api_list[self.api_name]
                 # importing API class
-                api_module = importlib.import_module(f'core.api.{self.api_name}')
+                api_module = importlib.import_module(f'.{self.api_name}', 'archbucket.core.api')
                 # new instance of API with auth token passed
                 api_instance = eval(f'api_module.{class_name}("{auth_token}")')
                 # setting proccessing pipelines
@@ -204,7 +206,7 @@ class Server(metaclass=singleton3.Singleton):
         return ('info', 'Bot is running.') if self.bot_running else ('info', 'Bot is not running.')
 
     def get_modules(self):
-        with open('core/modules/.modules') as file:
+        with open(self.core_path + '/modules/.modules') as file:
             validated_modules = json.load(file)
         return ('info', repr(validated_modules))
 
@@ -259,7 +261,7 @@ class Server(metaclass=singleton3.Singleton):
             return ('info', 'Server is running globally.')
 
     def save_config(self):
-        with open('server.config', 'r') as file:
+        with open(self.core_path + '/server.config', 'r') as file:
             config_dict = json.load(file)
         config_dict['is_local'] = self.server_is_local
         config_dict['port'] = self.port

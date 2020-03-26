@@ -1,5 +1,5 @@
-from core.request_router import RequestRouter, Request
-from core.pipeline import Pipeline
+from .request_router import RequestRouter, Request
+from .pipeline import Pipeline
 from threading import Thread
 
 class Bot:

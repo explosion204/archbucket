@@ -1,8 +1,7 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters
-import api.telegram.telegram_config as config
-from core.bot import Bot
-from core.request_router import Request
+from ..bot import Bot
+from ..request import Request
 from time import sleep
 
 class TelegramAPI:
