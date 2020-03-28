@@ -28,7 +28,12 @@ class RequestRouter:
             # module of active session treats command as request argument too
             request.args.insert(0, request.command)
             # enter module and get flag if session must be closed
-            session_exit = self.modules[module_name].run(request)
+            try:
+                session_exit = self.modules[module_name].run(request)
+            except Exception as e:
+                print(f'[error]: Module {module_name} removed from system.\n{str(e)}')
+                session_exit = True
+                self.remove_module(module_name)
             if session_exit:
                 del self.sessions[request.id]
             return
@@ -36,6 +41,10 @@ class RequestRouter:
             session_exit = self.modules[command].run(request)
         except KeyError:
             return
+        except Exception as e:
+            print(f'[error]: Module {module_name} removed from system.\n{str(e)}')
+            session_exit = True
+            self.remove_module(module_name)
         # add session to track dictionary if script needs it
         if not session_exit:
             self.sessions[request.id] = request.command
@@ -59,6 +68,7 @@ class RequestRouter:
         return (True, f"Module '{module_name}' successfully imported. Restart bot to apply changes.")
 
     def remove_module(self, module_name):
+        del self.modules[module_name]
         with open(self.modules_path + '/.modules', 'r') as file:
             modules_dict = json.load(file)
             if module_name in modules_dict.keys():
