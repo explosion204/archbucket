@@ -1,7 +1,6 @@
 import telegram
 from telegram.ext import Updater, MessageHandler, Filters
-from ..bot import Bot
-from ..request import Request
+from archbucket.core.bot import Bot, Request
 from time import sleep
 
 class TelegramAPI:
@@ -23,9 +22,6 @@ class TelegramAPI:
     def send_response(self, request: Request):
         if request.request_type == 'text' and not request.response == '':
             self.bot.send_message(chat_id=request.id, text=request.response)
-
-    def get_name(self):
-        return 'telegram'
 
     def listen(self, update, context):
         message = update.effective_message

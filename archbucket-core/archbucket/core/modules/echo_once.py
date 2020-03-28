@@ -1,4 +1,4 @@
-from ..request_router import Request
+from archbucket.core.bot import Request
 
 def run(request: Request) -> bool:
     '''
