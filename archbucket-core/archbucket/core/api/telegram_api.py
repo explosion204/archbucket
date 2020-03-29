@@ -4,9 +4,10 @@ from archbucket.core.bot import Bot, Request
 from time import sleep
 
 class TelegramAPI:
-    def __init__(self, auth_token):
-        self.bot = telegram.Bot(token=auth_token)
-        self.updater = Updater(token=auth_token, use_context=True)
+    def __init__(self):
+        self.auth_token = '1048894024:AAGJOo6YwcKzQgHBz_JkwHxKbE5EelZtfhI'
+        self.bot = telegram.Bot(token=self.auth_token)
+        self.updater = Updater(token=self.auth_token, use_context=True)
         self.dispatcher = self.updater.dispatcher
         self.dispatcher.add_handler(MessageHandler(Filters.text, self.listen))
         self.dispatcher.add_handler(MessageHandler(Filters.photo, self.listen))

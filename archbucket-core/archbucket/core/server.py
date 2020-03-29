@@ -69,9 +69,10 @@ class Server(metaclass=singleton3.Singleton):
             'remove module': self.remove_module,
             'enable module': self.enable_module,
             'disable module': self.disable_module,
-            'import api': 'to implement',
+            'import api': self.import_api,
             'remove api': 'to implement',
-            'get apis': 'to implement',
+            'enable api': 'to implement',
+            'disable api': 'to implement',
             'shutdown': 'to implement',
             'run locally': self.run_locally,
             'run globally': self.run_globally,
@@ -138,11 +139,11 @@ class Server(metaclass=singleton3.Singleton):
                 # new instance of Bot class
                 self.bot = Bot()
                 # retrieve class name and token from API list
-                (class_name, auth_token, api_type) = self.api_list[self.api_name]
+                class_name = self.api_list[self.api_name]
                 # importing API class
                 api_module = importlib.import_module(f'.{self.api_name}', 'archbucket.core.api')
                 # new instance of API with auth token passed
-                api_instance = eval(f'api_module.{class_name}("{auth_token}")')
+                api_instance = eval(f'api_module.{class_name}()')
                 # setting proccessing pipelines
                 for _ in range(self.pipelines_count):
                     self.bot.create_pipeline()
@@ -275,6 +276,16 @@ class Server(metaclass=singleton3.Singleton):
         with open('server.config', 'w') as file:
             json.dump(json_dict, file)
 
+    def import_api(self, *args):
+        api_name = args[0]
+        class_name = args[1]
+        source_code = ' '.join(args[2:])
+        (status, msg) = self.bot.import_api(api_name, class_name, source_code)
+        if status == False:
+            return ('error', msg)
+        else:
+            return ('success', msg)
+        pass
 
     def get_help(self):
         pass
