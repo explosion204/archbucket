@@ -131,26 +131,26 @@ class Server(metaclass=singleton3.Singleton):
 
     def execute_command(self, text):
         if text:
-            # try:
-            command_text = ' '.join(text.split()[:2])
-            args_list = text.split(' ')[2:]
-            (prefix, message) = self.commands[command_text](*args_list)
-            return f'[{prefix}]: {message}'
-            # except Exception:
-            #     return '[error]: Incorrect command.'
+            try:
+                command_text = ' '.join(text.split()[:2])
+                args_list = text.split(' ')[2:]
+                (prefix, message) = self.commands[command_text](*args_list)
+                return f'[{prefix}]: {message}'
+            except Exception:
+                return '[error]: Incorrect command.'
 
     def start_bot(self):
-        #try:
-        if self.api_name and not self.bot_running:
-            # new instance of Bot class
-            self.bot = Bot(self.pipelines_count, self.api_dict)
-            self.bot.start_bot()
-            self.bot_running = True
-            return ('success', 'Bot is running.')
-        else:
-            return ('error', 'Bot is already running.')
-        # except Exception:
-        #     return ('error', 'Cannot start bot.')
+        try:
+            if self.api_name and not self.bot_running:
+                # new instance of Bot class
+                self.bot = Bot(self.pipelines_count, self.api_dict)
+                self.bot.start_bot()
+                self.bot_running = True
+                return ('success', 'Bot is running.')
+            else:
+                return ('error', 'Bot is already running.')
+        except Exception:
+            return ('error', 'Cannot start bot.')
 
     def stop_bot(self):
         try:

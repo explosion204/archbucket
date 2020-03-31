@@ -1,1 +1,1 @@
-{"telegram_api": ["TelegramAPI", "enabled"]}
+{"telegram_api": ["TelegramAPI", "enabled"], "vk_api": ["VkAPI", "enabled"]}
