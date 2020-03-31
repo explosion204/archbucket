@@ -19,6 +19,7 @@ class RequestRouter:
             names = json.load(file)
             self.modules = {name: import_module(f'.{name}', 'archbucket.core.modules') for name in names.keys() if names[name] == 'enabled'}
 
+
     def route(self, request: Request):
         command = request.command
         # check if user has an active session
