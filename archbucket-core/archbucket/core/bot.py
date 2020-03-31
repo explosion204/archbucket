@@ -33,8 +33,6 @@ class Bot:
         self.busy = False
 
     def push_request(self, request):
-        caller_api_name = os.path.splitext(os.path.basename(inspect.stack()[1].filename))[0]
-        request.api_name = caller_api_name
         while True:
             if not self.busy:
                 self._find_pipeline(request)
