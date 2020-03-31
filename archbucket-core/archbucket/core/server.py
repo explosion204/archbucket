@@ -40,7 +40,8 @@ class Server(metaclass=singleton3.Singleton):
         # path to file with api list
         self.core_path = os.path.dirname(__file__)
         self.init_commands()
-        self.init_api_list()
+        self.api_dict = dict()
+        self.load_api_instances()
         # default config
         if not os.path.exists(self.core_path + '/server.config'):
             config_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram'}
@@ -80,9 +81,14 @@ class Server(metaclass=singleton3.Singleton):
             'help': self.get_help
         }
 
-    def init_api_list(self):
+    def load_api_instances(self):
         with open(self.core_path + '/api/.api', 'r') as file:
-            self.api_list = json.load(file)
+            names = json.load(file)
+        for (api_name, [class_name, enabled]) in names.items():
+            if api_name not in self.api_dict.keys() and enabled:
+                api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
+                api_instance = eval(f'api_module.{class_name}()')
+                self.api_dict[api_name] = api_instance
 
     def start_server(self):
         if self.server_configured:
@@ -137,7 +143,7 @@ class Server(metaclass=singleton3.Singleton):
         #try:
         if self.api_name and not self.bot_running:
             # new instance of Bot class
-            self.bot = Bot(self.pipelines_count)
+            self.bot = Bot(self.pipelines_count, self.api_dict)
             self.bot.start_bot()
             self.bot_running = True
             return ('success', 'Bot is running.')
@@ -177,11 +183,12 @@ class Server(metaclass=singleton3.Singleton):
             return ('error', 'Number of pipelines cannot be less then 1')
 
     def set_api(self, api_name):
-        if api_name in self.api_list.keys():
-            self.api_name = api_name
-            return ('success', f'API set to {api_name}')
-        else:
-            return ('error', 'Cannot set API. Are you sure its name is correct?')
+        pass
+        # if api_name in self.api_list.keys():
+        #     self.api_name = api_name
+        #     return ('success', f'API set to {api_name}')
+        # else:
+        #     return ('error', 'Cannot set API. Are you sure its name is correct?')
 
     def get_api(self):
         return ('info', f'{self.api_name}')

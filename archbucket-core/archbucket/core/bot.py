@@ -9,7 +9,7 @@ import importlib
 import inspect
 
 class Bot:
-    def __init__(self, pipelines_count):
+    def __init__(self, pipelines_count, api_dict):
         self.pipelines = list()
         for _ in range(pipelines_count):
             # setting pipelines
@@ -21,14 +21,14 @@ class Bot:
         self.request_router = RequestRouter()
         # loading api classes
         self.api_path = os.path.join(os.path.dirname(__file__), 'api')
-        self.api_dict = dict()
-        with open(self.api_path + '/.api') as file:
-            names = json.load(file)
-        for (api_name, [class_name, enabled]) in names.items():
-            if enabled:
-                api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
-                api_instance = eval(f'api_module.{class_name}()')
-                self.api_dict[api_name] = api_instance
+        self.api_dict = api_dict
+        # with open(self.api_path + '/.api') as file:
+        #     names = json.load(file)
+        # for (api_name, [class_name, enabled]) in names.items():
+        #     if enabled:
+        #         api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
+        #         api_instance = eval(f'api_module.{class_name}()')
+        #         self.api_dict[api_name] = api_instance
         # busy flag
         self.busy = False
 
@@ -50,7 +50,7 @@ class Bot:
     def start_bot(self):
         for api_instance in self.api_dict.values():
             try:
-                api_thread = Thread(target=api_instance.start(self))
+                api_thread = Thread(target=api_instance.start, args=(self, ))
                 api_thread.start()
             except Exception:
                 pass
