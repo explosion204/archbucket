@@ -53,7 +53,6 @@ class Server(metaclass=singleton3.Singleton):
         self.server_is_local = config_dict['is_local']
         self.port = int(config_dict['port'])
         self.pipelines_count = int(config_dict['pipelines_count'])
-        self.api_name = config_dict['default_api']
 
     def init_commands(self):
         self.commands = {
@@ -62,8 +61,7 @@ class Server(metaclass=singleton3.Singleton):
             'bot restart': self.restart_bot,
             'bot status': self.get_bot_status,
             'set pipelines': self.set_pipelines,
-            'set api': self.set_api,
-            'get api': self.get_api,
+            'get api_list': self.get_api_list,
             'set port': self.set_port,
             'get modules': self.get_modules,
             'import module': self.import_module,
@@ -141,7 +139,7 @@ class Server(metaclass=singleton3.Singleton):
 
     def start_bot(self):
         try:
-            if self.api_name and not self.bot_running:
+            if self.api_dict and not self.bot_running:
                 # new instance of Bot class
                 self.bot = Bot(self.pipelines_count, self.api_dict)
                 self.bot.start_bot()
@@ -182,16 +180,8 @@ class Server(metaclass=singleton3.Singleton):
         else:
             return ('error', 'Number of pipelines cannot be less then 1')
 
-    def set_api(self, api_name):
-        pass
-        # if api_name in self.api_list.keys():
-        #     self.api_name = api_name
-        #     return ('success', f'API set to {api_name}')
-        # else:
-        #     return ('error', 'Cannot set API. Are you sure its name is correct?')
-
-    def get_api(self):
-        return ('info', f'{self.api_name}')
+    def get_api_list(self):
+        return ('info', f'{self.api_dict}')
 
     def set_port(self, port):
         if port > 65535:
@@ -264,7 +254,6 @@ class Server(metaclass=singleton3.Singleton):
         config_dict['is_local'] = self.server_is_local
         config_dict['port'] = self.port
         config_dict['pipelines_count'] = self.pipelines_count
-        config_dict['default_api'] = self.api_name
         with open('server.config', 'w') as file:
             json.dump(config_dict, file)
         
