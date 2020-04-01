@@ -1,6 +1,7 @@
 from importlib import import_module
 from os.path import exists
 from .request import Request
+from . import manipulator
 import re
 import json
 import ast
@@ -34,7 +35,8 @@ class RequestRouter:
             except Exception as e:
                 print(f'[error]: Module {module_name} removed from system.\n{str(e)}')
                 session_exit = True
-                self.remove_module(module_name)
+                del self.modules[module_name]
+                manipulator.remove_module(module_name)
             if session_exit:
                 del self.sessions[request.id]
             return
@@ -45,60 +47,8 @@ class RequestRouter:
         except Exception as e:
             print(f'[error]: Module {module_name} removed from system.\n{str(e)}')
             session_exit = True
-            self.remove_module(module_name)
+            del self.modules[module_name]
+            manipulator.remove_module(module_name)
         # add session to track dictionary if script needs it
         if not session_exit:
             self.sessions[request.id] = request.command
-
-    def import_module(self, module_name, source_code) -> (bool, str):
-        try:
-             ast.parse(source_code)
-        except SyntaxError:
-            return (False, 'Syntax error.')
-        pattern = r'def run\((.|\n)*\)(.|\n)*return (False|True)'
-        if not re.search(pattern, source_code):
-             return (False, "Module has no callable attribute 'run' which returns True or False.")
-        # successful validation
-        with open(self.modules_path + '/.modules', 'r') as file:
-            modules_dict = json.load(file)
-            modules_dict[module_name] = 'disabled'
-        with open(self.modules_path + '/.modules', 'w') as file:
-            json.dump(modules_dict, file)
-        with open(self.modules_path + f'/{module_name}.py', 'w') as file:
-            file.write(source_code)
-        return (True, f"Module '{module_name}' successfully imported. Restart bot to apply changes.")
-
-    def remove_module(self, module_name):
-        del self.modules[module_name]
-        with open(self.modules_path + '/.modules', 'r') as file:
-            modules_dict = json.load(file)
-            if module_name in modules_dict.keys():
-                os.remove(self.modules_path + f'/{module_name}.py')
-                del modules_dict[module_name]
-            else:
-                return (False, f"Cannot find module '{module_name}'.")
-        with open(self.modules_path + '/.modules', 'w') as file:
-            json.dump(modules_dict, file)
-        return (True, f"Module '{module_name}'' successfully removed. Restart bot to apply changes.")
-
-    def enable_module(self, module_name):
-        with open(self.modules_path + '/.modules', 'r') as file:
-            modules_dict = json.load(file)
-            if module_name in modules_dict.keys():
-                modules_dict[module_name] = 'enabled'
-            else:
-                return (False, f"Cannot find module '{module_name}'.")
-        with open(self.modules_path + '/.modules', 'w') as file:
-            json.dump(modules_dict, file)
-        return (True, f"Module '{module_name}' successfully enabled. Restart bot to apply changes.")
-
-    def disable_module(self, module_name):
-        with open(self.modules_path + '/.modules', 'r') as file:
-            modules_dict = json.load(file)
-            if module_name in modules_dict.keys():
-                modules_dict[module_name] = 'disabled'
-            else:
-                return (False, f"Cannot find module '{module_name}'.")
-        with open(self.modules_path + '/.modules', 'w') as file:
-            json.dump(modules_dict, file)
-        return (True, f"Module '{module_name}' successfully disabled. Restart bot to apply changes.")

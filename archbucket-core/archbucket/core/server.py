@@ -6,6 +6,7 @@ import singleton3
 import importlib
 import os
 from .bot import Bot
+from . import manipulator
 from urllib.request import urlopen
 from urllib.error import URLError
 from requests import get
@@ -69,9 +70,9 @@ class Server(metaclass=singleton3.Singleton):
             'enable module': self.enable_module,
             'disable module': self.disable_module,
             'import api': self.import_api,
-            'remove api': 'to implement',
-            'enable api': 'to implement',
-            'disable api': 'to implement',
+            'remove api': self.remove_api,
+            'enable api': self.enable_api,
+            'disable api': self.disable_api,
             'shutdown': 'to implement',
             'run locally': self.run_locally,
             'run globally': self.run_globally,
@@ -201,28 +202,28 @@ class Server(metaclass=singleton3.Singleton):
     def import_module(self, *args):
         module_name = args[0]
         source_code = ' '.join(args[1:])
-        (status, msg) = self.bot.request_router.import_module(module_name, source_code)
+        (status, msg) = manipulator.import_module(module_name, source_code)
         if status == False:
             return ('error', msg)
         else:
             return ('success', msg)
 
     def remove_module(self, module_name):
-        (status, msg) = self.bot.request_router.remove_module(module_name)
+        (status, msg) = manipulator.remove_module(module_name)
         if status == False:
             return ('error', msg)
         else:
             return ('success', msg)
 
     def enable_module(self, module_name):
-        (status, msg) = self.bot.request_router.enable_module(module_name)
+        (status, msg) = manipulator.enable_module(module_name)
         if status == False:
             return ('error', msg)
         else:
             return ('success', msg)
 
     def disable_module(self, module_name):
-        (status, msg) = self.bot.request_router.disable_module(module_name)
+        (status, msg) = manipulator.disable_module(module_name)
         if status == False:
             return ('error', msg)
         else:
@@ -266,11 +267,20 @@ class Server(metaclass=singleton3.Singleton):
         api_name = args[0]
         class_name = args[1]
         source_code = ' '.join(args[2:])
-        (status, msg) = self.bot.import_api(api_name, class_name, source_code)
+        (status, msg) = manipulator.import_api(api_name, class_name, source_code)
         if status == False:
             return ('error', msg)
         else:
             return ('success', msg)
+        pass
+
+    def remove_api(self, api_name):
+        pass
+
+    def enable_api(self, api_name):
+        pass
+
+    def disable_api(self, api_name):
         pass
 
     def get_help(self):
