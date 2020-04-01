@@ -37,18 +37,12 @@ class Bot:
 
     def start_bot(self):
         for api_instance in self.api_dict.values():
-            try:
-                api_thread = Thread(target=api_instance.start, args=(self, ))
-                api_thread.start()
-            except Exception:
-                pass
+            api_thread = Thread(target=api_instance.start, args=(self, ))
+            api_thread.start()
 
     def stop_bot(self):
         for api_instance in self.api_dict.values():
-            try:
-                api_instance.stop()
-            except Exception:
-                pass
+            api_instance.stop()
 
     def send_response(self, request: Request):
         self.api_dict[request.api_name].send_response(request)

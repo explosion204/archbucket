@@ -16,7 +16,7 @@ class TelegramAPI:
     def start(self, core_bot):
         self.core_bot = core_bot
         self.updater.start_polling()
-        
+
     def stop(self):
         self.updater.stop()
 

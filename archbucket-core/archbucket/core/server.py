@@ -7,6 +7,7 @@ import importlib
 import os
 from .bot import Bot
 from . import manipulator
+from . import error_handler
 from urllib.request import urlopen
 from urllib.error import URLError
 from requests import get
@@ -73,20 +74,21 @@ class Server(metaclass=singleton3.Singleton):
             'remove api': self.remove_api,
             'enable api': self.enable_api,
             'disable api': self.disable_api,
-            'shutdown': 'to implement',
+            'reload api_list': self.reload_api_list,
             'run locally': self.run_locally,
             'run globally': self.run_globally,
-            'server status': self.get_server_status,
-            'help': self.get_help
+            'server status': self.get_server_status
         }
 
     def load_api_instances(self):
         with open(self.core_path + '/api/.api', 'r') as file:
             names = json.load(file)
         for (api_name, [class_name, enabled]) in names.items():
-            if api_name not in self.api_dict.keys() and enabled:
+            if enabled:
                 api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
+                api_module = importlib.reload(api_module)
                 api_instance = eval(f'api_module.{class_name}()')
+                error_handler.class_error_handler(api_instance)
                 self.api_dict[api_name] = api_instance
 
     def start_server(self):
@@ -295,5 +297,10 @@ class Server(metaclass=singleton3.Singleton):
         else:
             return ('success', msg)
 
-    def get_help(self):
-        pass
+    def reload_api_list(self):
+        try:
+            self.load_api_instances()
+        except Exception:
+            return ('error', 'Cannot reload API list.')
+        return ('success', 'API list reloaded.')
+        

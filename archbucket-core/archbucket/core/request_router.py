@@ -1,7 +1,7 @@
 from importlib import import_module
 from os.path import exists
 from .request import Request
-from . import manipulator
+from . import error_handler
 import re
 import json
 import ast
@@ -19,7 +19,8 @@ class RequestRouter:
         with open(self.modules_path + r'\.modules', 'r') as file:
             names = json.load(file)
             self.modules = {name: import_module(f'.{name}', 'archbucket.core.modules') for name in names.keys() if names[name] == 'enabled'}
-
+            for module in self.modules.values():
+                module.run = error_handler.func_error_handler(module.run)
 
     def route(self, request: Request):
         command = request.command
@@ -30,13 +31,7 @@ class RequestRouter:
             # module of active session treats command as request argument too
             request.args.insert(0, request.command)
             # enter module and get flag if session must be closed
-            try:
-                session_exit = self.modules[module_name].run(request)
-            except Exception as e:
-                print(f'[error]: Module {module_name} removed from system.\n{str(e)}')
-                session_exit = True
-                del self.modules[module_name]
-                manipulator.remove_module(module_name)
+            session_exit = self.modules[module_name].run(request)
             if session_exit:
                 del self.sessions[request.id]
             return
@@ -44,11 +39,6 @@ class RequestRouter:
             session_exit = self.modules[command].run(request)
         except KeyError:
             return
-        except Exception as e:
-            print(f'[error]: Module {module_name} removed from system.\n{str(e)}')
-            session_exit = True
-            del self.modules[module_name]
-            manipulator.remove_module(module_name)
         # add session to track dictionary if script needs it
         if not session_exit:
             self.sessions[request.id] = request.command
