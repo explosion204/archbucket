@@ -275,7 +275,11 @@ class Server(metaclass=singleton3.Singleton):
         pass
 
     def remove_api(self, api_name):
-        pass
+        (status, msg) = manipulator.remove_api(api_name)
+        if status == False:
+            return ('error', msg)
+        else:
+            return ('success', msg)
 
     def enable_api(self, api_name):
         (status, msg) = manipulator.enable_api(api_name)
