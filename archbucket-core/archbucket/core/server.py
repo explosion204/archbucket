@@ -60,9 +60,9 @@ class Server(metaclass=singleton3.Singleton):
             'bot restart': self.restart_bot, # works
             'bot status': self.get_bot_status, # works
             'set pipelines': self.set_pipelines, # works
-            'get pipelines': self.get_pipelines, # to test
-            'get api_list': self.get_api_list, # to fix
-            'set port': self.set_port, # works
+            'get pipelines': self.get_pipelines, # works
+            'get api_list': self.get_api_list, # works
+            'set port': self.set_port, # fix
             'get modules': self.get_modules, # works
             'import module': self.import_module, # works
             'remove module': self.remove_module, # works
@@ -202,12 +202,12 @@ class Server(metaclass=singleton3.Singleton):
             return ('info', json.load(file))
 
     def set_port(self, port):
-        if port > 65535:
+        if int(port) > 65535 and int(port) > 0:
             return ('error', 'Invalid port value.')
         else:
-            self.port = port
+            self.port = int(port)
             self.save_config()
-            return ('success', 'Port set successfully. Restart server to apply changes.')
+            return ('success', f'Port set successfully to {self.port}. Restart server to apply changes.')
 
     def get_bot_status(self):
         return ('info', 'Bot is running.') if self.bot_running else ('info', 'Bot is not running.')
