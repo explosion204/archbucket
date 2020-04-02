@@ -72,6 +72,7 @@ class Server(metaclass=singleton3.Singleton):
             'remove api': self.remove_api, # to test
             'enable api': self.enable_api, # to test
             'disable api': self.disable_api, # to test
+            'reset config': self.reset_config, # to test
             'run locally': self.run_locally, # to test
             'run globally': self.run_globally, # to test
             'server status': self.get_server_status, # to improve
@@ -276,10 +277,11 @@ class Server(metaclass=singleton3.Singleton):
         with open(self.core_path + '/server.config', 'w') as file:
             json.dump(config_dict, file)
         
-    def restore_config(self):
-        json_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram_api'}
+    def reset_config(self):
+        json_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1}
         with open(self.core_path + '/server.config', 'w') as file:
             json.dump(json_dict, file)
+        return ('success', 'Config reset to default state.')
 
     def import_api(self, *args):
         api_name = args[0]
