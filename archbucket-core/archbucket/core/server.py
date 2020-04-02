@@ -35,7 +35,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
 class Server(metaclass=singleton3.Singleton):
     def __init__(self):
-        _instance = self
         self.server_configured = False
         self.server_started = False
         self.bot_running = False
@@ -76,8 +75,8 @@ class Server(metaclass=singleton3.Singleton):
             'run locally': self.run_locally, # to test
             'run globally': self.run_globally, # to test
             'server status': self.get_server_status, # to improve
-            'stop server': 'to implement',
-            'restart server': 'to implement'
+            'stop server': self.stop_server, # to test
+            'restart server': self.restart_server # to test
         }
 
     def start_server(self):
@@ -113,11 +112,21 @@ class Server(metaclass=singleton3.Singleton):
 
     def stop_server(self):
         if self.server_started:
-            self.server.shutdown()
+            self.server_started = False
             self.server.server_close()
-            print('[success]: Server stopped. Config changes saved.')
+            return ('success', 'Server stopped. ')
         else:
-            print('[error]: Cannot stop server. Is it running?')
+            return ('error', 'Cannot stop server. Is it running?')
+
+    def restart_server(self):
+        if self.server_started:
+            self.stop_server()
+            self.__init__()
+            self.configure_server()
+            self.start_server()
+            return ('success', 'Server restarted. Try to reconnect.')
+        else:
+            return ('error', 'Cannot restart server. Is it running?')
 
     def execute_command(self, text):
         if text:
