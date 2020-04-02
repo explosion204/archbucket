@@ -198,7 +198,8 @@ class Server(metaclass=singleton3.Singleton):
         return ('info', f'{self.pipelines_count}')
 
     def get_api_list(self):
-        pass
+        with open(self.core_path + '/api/.api') as file:
+            return ('info', json.load(file))
 
     def set_port(self, port):
         if port > 65535:
