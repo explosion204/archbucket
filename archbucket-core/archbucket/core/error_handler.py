@@ -9,7 +9,7 @@ def func_error_handler(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
         try:
-            function(*args, **kwargs)
+            return function(*args, **kwargs)
         except Exception:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             filename = os.path.splitext(os.path.basename(inspect.getfile(function)))[0]
