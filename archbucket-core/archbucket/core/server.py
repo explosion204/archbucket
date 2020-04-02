@@ -198,7 +198,7 @@ class Server(metaclass=singleton3.Singleton):
         else:
             self.port = int(port)
             self.save_config()
-            return ('success', f'Port set successfully to {self.port}. Restart server to apply changes.')
+            return ('success', f'Port set to {self.port}. Restart server to apply changes.')
 
     def get_bot_status(self):
         return ('info', 'Bot is running.') if self.bot_running else ('info', 'Bot is not running.')
@@ -242,7 +242,7 @@ class Server(metaclass=singleton3.Singleton):
         if not self.server_is_local:
             self.server_is_local = True
             self.save_config()
-            return ('success', 'Server switched to local running. Restart to apply changes.')
+            return ('success', 'Server switched to local running. Restart server to apply changes.')
         else:
             return ('error', 'Server is already running locally.')
 
@@ -250,15 +250,15 @@ class Server(metaclass=singleton3.Singleton):
         if self.server_is_local:
             self.server_is_local = False
             self.save_config()
-            return ('success', 'Server switched to global running. Restart to apply changes.')
+            return ('success', 'Server switched to global running. Restart server to apply changes.')
         else:
             return ('error', 'Server is already running globally.')
 
     def get_server_status(self):
         if self.server_is_local:
-            return ('info', f'Server is running locally. Address: {self.server.server_address[0]}:{self.server.server_address[1]}')
+            return ('info', f'Server is running locally. Address: {self.server.server_address[0]}:{self.server.server_address[1]}.')
         else:
-            return ('info', f'Server is running globally. Address: {self.ip}:{self.server.server_address[1]}')
+            return ('info', f'Server is running globally. Address: {self.ip}:{self.server.server_address[1]}.')
 
     def save_config(self):
         with open(self.core_path + '/server.config', 'r') as file:

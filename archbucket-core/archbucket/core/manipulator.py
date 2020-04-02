@@ -18,7 +18,7 @@ def import_module(module_name, source_code) -> (bool, str):
         json.dump(modules_dict, file)
     with open(MODULES_PATH + f'/{module_name}.py', 'w') as file:
         file.write(source_code)
-    return (True, f"Module '{module_name}' successfully imported. Restart bot to apply changes.")
+    return (True, f"Module '{module_name}' imported. Restart bot to apply changes.")
 
 def remove_module(module_name):
     with open(MODULES_PATH + '/.modules', 'r') as file:
@@ -27,10 +27,10 @@ def remove_module(module_name):
             os.remove(MODULES_PATH + f'/{module_name}.py')
             del modules_dict[module_name]
         else:
-            return (False, f"Cannot find module '{module_name}'.")
+            return (False, f"Cannot find module with name '{module_name}'.")
     with open(MODULES_PATH + '/.modules', 'w') as file:
         json.dump(modules_dict, file)
-    return (True, f"Module '{module_name}' successfully removed. Restart bot to apply changes.")
+    return (True, f"Module '{module_name}' removed. Restart bot to apply changes.")
 
 def enable_module(module_name):
     with open(MODULES_PATH + '/.modules', 'r') as file:
@@ -38,10 +38,10 @@ def enable_module(module_name):
         if module_name in modules_dict.keys():
             modules_dict[module_name] = 'enabled'
         else:
-            return (False, f"Cannot find module '{module_name}'.")
+            return (False, f"Cannot find module with name '{module_name}'.")
     with open(MODULES_PATH + '/.modules', 'w') as file:
         json.dump(modules_dict, file)
-    return (True, f"Module '{module_name}' successfully enabled. Restart bot to apply changes.")
+    return (True, f"Module '{module_name}' enabled. Restart bot to apply changes.")
 
 def disable_module(module_name):
     with open(MODULES_PATH + '/.modules', 'r') as file:
@@ -49,10 +49,10 @@ def disable_module(module_name):
         if module_name in modules_dict.keys():
             modules_dict[module_name] = 'disabled'
         else:
-            return (False, f"Cannot find module '{module_name}'.")
+            return (False, f"Cannot find module with name '{module_name}'.")
     with open(MODULES_PATH + '/.modules', 'w') as file:
         json.dump(modules_dict, file)
-    return (True, f"Module '{module_name}' successfully disabled. Restart bot to apply changes.")
+    return (True, f"Module '{module_name}' disabled. Restart bot to apply changes.")
 
 def import_api(api_name, class_name, source_code) -> (bool, str):
     try:
@@ -66,7 +66,7 @@ def import_api(api_name, class_name, source_code) -> (bool, str):
         json.dump(apis_dict, file)
     with open(API_PATH + f'/{api_name}.py', 'w') as file:
         file.write(source_code)
-    return (True, f"API class '{api_name}' successfully imported. Restart bot to apply changes.")
+    return (True, f"API '{api_name}' imported. Restart bot to apply changes.")
 
 def remove_api(api_name):
     with open(API_PATH + '/.api', 'r') as file:
@@ -75,10 +75,10 @@ def remove_api(api_name):
             os.remove(API_PATH + f'/{api_name}.py')
             del api_dict[api_name]
         else:
-            return (False, f"Cannot find API with name '{api_name}'")
+            return (False, f"Cannot find API with name '{api_name}'.")
     with open(API_PATH + '/.api', 'w') as file:
         json.dump(api_dict, file)
-    return (True, f"API {api_name} successfully removed. Restart bot to apply changes.")
+    return (True, f"API '{api_name}' removed. Restart bot to apply changes.")
 
 def enable_api(api_name):
     with open(API_PATH + '/.api', 'r') as file:
@@ -86,10 +86,10 @@ def enable_api(api_name):
         if api_name in api_dict.keys():
             api_dict[api_name][1] = 'enabled'
         else:
-            return (False, f"Cannot find API with name '{api_name}'")
+            return (False, f"Cannot find API with name '{api_name}'.")
     with open(API_PATH + '/.api', 'w') as file:
         json.dump(api_dict, file)
-    return (True, f"API '{api_name}' successfully enabled. Restart bot to apply changes.")
+    return (True, f"API '{api_name}' enabled. Restart bot to apply changes.")
 
 def disable_api(api_name):
     with open(API_PATH + '/.api', 'r') as file:
@@ -97,7 +97,7 @@ def disable_api(api_name):
         if api_name in api_dict.keys():
             api_dict[api_name][1] = 'disabled'
         else:
-            return (False, f"Cannot find API with name '{api_name}'")
+            return (False, f"Cannot find API with name '{api_name}'.")
     with open(API_PATH + '/.api', 'w') as file:
         json.dump(api_dict, file)
-    return (True, f"API '{api_name}' successfully disabled. Restart bot to apply changes.")
+    return (True, f"API '{api_name}' disabled. Restart bot to apply changes.")
