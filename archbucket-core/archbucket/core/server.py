@@ -273,12 +273,12 @@ class Server(metaclass=singleton3.Singleton):
         config_dict['is_local'] = self.server_is_local
         config_dict['port'] = self.port
         config_dict['pipelines_count'] = self.pipelines_count
-        with open('server.config', 'w') as file:
+        with open(self.core_path + '/server.config', 'w') as file:
             json.dump(config_dict, file)
         
     def restore_config(self):
         json_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram_api'}
-        with open('server.config', 'w') as file:
+        with open(self.core_path + '/server.config', 'w') as file:
             json.dump(json_dict, file)
 
     def import_api(self, *args):
