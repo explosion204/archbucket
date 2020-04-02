@@ -42,8 +42,6 @@ class Server(metaclass=singleton3.Singleton):
         # path to file with api list
         self.core_path = os.path.dirname(__file__)
         self.init_commands()
-        self.api_dict = dict()
-        self.load_api_instances()
         # default config
         if not os.path.exists(self.core_path + '/server.config'):
             config_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram'}
@@ -58,38 +56,29 @@ class Server(metaclass=singleton3.Singleton):
 
     def init_commands(self):
         self.commands = {
-            'bot start': self.start_bot,
-            'bot stop': self.stop_bot,
-            'bot restart': self.restart_bot,
-            'bot status': self.get_bot_status,
-            'set pipelines': self.set_pipelines,
-            'get api_list': self.get_api_list,
-            'set port': self.set_port,
-            'get modules': self.get_modules,
-            'import module': self.import_module,
-            'remove module': self.remove_module,
-            'enable module': self.enable_module,
-            'disable module': self.disable_module,
-            'import api': self.import_api,
-            'remove api': self.remove_api,
-            'enable api': self.enable_api,
-            'disable api': self.disable_api,
-            'reload api_list': self.reload_api_list,
-            'run locally': self.run_locally,
-            'run globally': self.run_globally,
-            'server status': self.get_server_status
+            'bot start': self.start_bot, # works
+            'bot stop': self.stop_bot, # works
+            'bot restart': self.restart_bot, # works
+            'bot status': self.get_bot_status, # works
+            'set pipelines': self.set_pipelines, # works
+            'get pipelines': 'to implement',
+            'get api_list': self.get_api_list, # to fix
+            'set port': self.set_port, # works
+            'get modules': self.get_modules, # works
+            'import module': self.import_module, # works
+            'remove module': self.remove_module, # works
+            'enable module': self.enable_module, # works
+            'disable module': self.disable_module, # works
+            'import api': self.import_api, # works
+            'remove api': self.remove_api, # to test
+            'enable api': self.enable_api, # to test
+            'disable api': self.disable_api, # to test
+            'run locally': self.run_locally, # to test
+            'run globally': self.run_globally, # to test
+            'server status': self.get_server_status, # to improve
+            'stop server': 'to implement',
+            'restart server': 'to implement'
         }
-
-    def load_api_instances(self):
-        with open(self.core_path + '/api/.api', 'r') as file:
-            names = json.load(file)
-        for (api_name, [class_name, enabled]) in names.items():
-            if enabled:
-                api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
-                api_module = importlib.reload(api_module)
-                api_instance = eval(f'api_module.{class_name}()')
-                error_handler.class_error_handler(api_instance)
-                self.api_dict[api_name] = api_instance
 
     def start_server(self):
         if self.server_configured:
@@ -142,9 +131,22 @@ class Server(metaclass=singleton3.Singleton):
 
     def start_bot(self):
         try:
-            if self.api_dict and not self.bot_running:
+            if not self.bot_running:
+                api_dict = dict()
+                with open(self.core_path + '/api/.api', 'r') as file:
+                    names = json.load(file)
+                for (api_name, [class_name, enabled]) in names.items():
+                    if enabled:
+                        api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
+                        api_module = importlib.reload(api_module)
+                        api_instance = eval(f'api_module.{class_name}()')
+                        # checking attributes
+                        if not hasattr(api_instance, 'start') or not hasattr(api_instance, 'stop') or not hasattr(api_instance, 'send_response'):
+                            raise AttributeError
+                        error_handler.class_error_handler(api_instance)
+                        api_dict[api_name] = api_instance
                 # new instance of Bot class
-                self.bot = Bot(self.pipelines_count, self.api_dict)
+                self.bot = Bot(self.pipelines_count, api_dict)
                 self.bot.start_bot()
                 self.bot_running = True
                 return ('success', 'Bot is running.')
@@ -179,18 +181,19 @@ class Server(metaclass=singleton3.Singleton):
         if int(number) > 0:
             self.pipelines_count = int(number)
             self.save_config()
-            return ('success', f'Pipelines count set to {number}. Restart to apply changes.') 
+            return ('success', f'Pipelines count set to {number}. Restart bot to apply changes.') 
         else:
-            return ('error', 'Number of pipelines cannot be less then 1')
+            return ('error', 'Number of pipelines cannot be less then 1.')
 
     def get_api_list(self):
-        return ('info', f'{self.api_dict}')
+        pass
 
     def set_port(self, port):
         if port > 65535:
             return ('error', 'Invalid port value.')
         else:
             self.port = port
+            self.save_config()
             return ('success', 'Port set successfully. Restart server to apply changes.')
 
     def get_bot_status(self):
@@ -296,11 +299,3 @@ class Server(metaclass=singleton3.Singleton):
             return ('error', msg)
         else:
             return ('success', msg)
-
-    def reload_api_list(self):
-        try:
-            self.load_api_instances()
-        except Exception:
-            return ('error', 'Cannot reload API list.')
-        return ('success', 'API list reloaded.')
-        
