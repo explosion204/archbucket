@@ -55,29 +55,28 @@ class Server(metaclass=singleton3.Singleton):
 
     def init_commands(self):
         self.commands = {
-            'bot start': self.start_bot, # works
-            'bot stop': self.stop_bot, # works
-            'bot restart': self.restart_bot, # works
-            'bot status': self.get_bot_status, # works
-            'set pipelines': self.set_pipelines, # works
-            'get pipelines': self.get_pipelines, # works
-            'get api_list': self.get_api_list, # works
-            'set port': self.set_port, # works
-            'get modules': self.get_modules, # works
-            'import module': self.import_module, # works
-            'remove module': self.remove_module, # works
-            'enable module': self.enable_module, # works
-            'disable module': self.disable_module, # works
-            'import api': self.import_api, # works
-            'remove api': self.remove_api, # to test
-            'enable api': self.enable_api, # to test
-            'disable api': self.disable_api, # to test
-            'reset config': self.reset_config, # to test
-            'run locally': self.run_locally, # to test
-            'run globally': self.run_globally, # to test
-            'server status': self.get_server_status, # to test
-            'stop server': self.stop_server, # to test
-            'restart server': self.restart_server # to test
+            'bot start': self.start_bot,
+            'bot stop': self.stop_bot,
+            'bot restart': self.restart_bot,
+            'bot status': self.get_bot_status,
+            'set pipelines': self.set_pipelines,
+            'get pipelines': self.get_pipelines,
+            'get api_list': self.get_api_list,
+            'set port': self.set_port,
+            'get modules': self.get_modules, 
+            'import module': self.import_module,
+            'remove module': self.remove_module, 
+            'enable module': self.enable_module, 
+            'disable module': self.disable_module, 
+            'import api': self.import_api,
+            'remove api': self.remove_api, 
+            'enable api': self.enable_api, 
+            'disable api': self.disable_api, 
+            'reset config': self.reset_config, 
+            'run locally': self.run_locally, 
+            'run globally': self.run_globally,
+            'server status': self.get_server_status,
+            'server stop': self.stop_server
         }
 
     def start_server(self):
@@ -114,20 +113,10 @@ class Server(metaclass=singleton3.Singleton):
     def stop_server(self):
         if self.server_started:
             self.server_started = False
-            self.server.server_close()
+            self.server.shutdown()
             return ('success', 'Server stopped. ')
         else:
             return ('error', 'Cannot stop server. Is it running?')
-
-    def restart_server(self):
-        if self.server_started:
-            self.stop_server()
-            self.__init__()
-            self.configure_server()
-            self.start_server()
-            return ('success', 'Server restarted. Try to reconnect.')
-        else:
-            return ('error', 'Cannot restart server. Is it running?')
 
     def execute_command(self, text):
         if text:
@@ -252,6 +241,7 @@ class Server(metaclass=singleton3.Singleton):
     def run_locally(self):
         if not self.server_is_local:
             self.server_is_local = True
+            self.save_config()
             return ('success', 'Server switched to local running. Restart to apply changes.')
         else:
             return ('error', 'Server is already running locally.')
@@ -259,15 +249,16 @@ class Server(metaclass=singleton3.Singleton):
     def run_globally(self):
         if self.server_is_local:
             self.server_is_local = False
+            self.save_config()
             return ('success', 'Server switched to global running. Restart to apply changes.')
         else:
             return ('error', 'Server is already running globally.')
 
     def get_server_status(self):
         if self.server_is_local:
-            return ('info', f'Server is running locally. Address: {self.ip}:{self.port}')
+            return ('info', f'Server is running locally. Address: {self.server.server_address[0]}:{self.server.server_address[1]}')
         else:
-            return ('info', f'Server is running globally. Address: {self.ip}:{self.port}')
+            return ('info', f'Server is running globally. Address: {self.ip}:{self.server.server_address[1]}')
 
     def save_config(self):
         with open(self.core_path + '/server.config', 'r') as file:
