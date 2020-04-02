@@ -11,10 +11,6 @@ def import_module(module_name, source_code) -> (bool, str):
         ast.parse(source_code)
     except SyntaxError:
         return (False, 'Syntax error.')
-    pattern = r'def run\((.|\n)*\)(.|\n)*return (False|True)'
-    if not re.search(pattern, source_code):
-        return (False, "Module has no callable attribute 'run' which returns True or False.")
-    # successful validation
     with open(MODULES_PATH + '/.modules', 'r') as file:
         modules_dict = json.load(file)
         modules_dict[module_name] = 'disabled'
@@ -63,14 +59,6 @@ def import_api(api_name, class_name, source_code) -> (bool, str):
         ast.parse(source_code)
     except SyntaxError:
         return (False, 'Syntax error.')
-    if not re.search(r'\tdef __init__\(self\):', source_code):
-        return (False, "API class must have '__init__' member function which takes one argument (including 'self')")
-    if not re.search(r'\tdef start\(self, [^\s\n]+\):', source_code):
-        return (False, "API class must have 'start' member function which takes two arguments (including 'self')")
-    if not re.search(r'\tdef stop\(self\):', source_code):
-        return (False, "API class must have 'stop' member function which takes one argument (including 'self')")
-    if not re.search(r'\tdef send_response\(self, [^\s\n]+\):', source_code):
-        return (False, "API class must have 'send_response' member function whick takes two arguments (including 'self')")
     with open(API_PATH + '/.api', 'r') as file:
         apis_dict = json.load(file)
         apis_dict[f'{api_name}'] = [class_name, 'disabled']
