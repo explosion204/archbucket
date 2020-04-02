@@ -72,6 +72,7 @@ def remove_api(api_name):
     with open(API_PATH + '/.api', 'r') as file:
         api_dict = json.load(file)
         if api_name in api_dict.keys():
+            os.remove(API_PATH + f'/{api_name}.py')
             del api_dict[api_name]
         else:
             return (False, f"Cannot find API with name '{api_name}'")
