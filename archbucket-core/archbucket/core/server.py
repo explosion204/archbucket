@@ -215,8 +215,8 @@ class Server(metaclass=singleton3.Singleton):
 
     def get_modules(self):
         with open(self.core_path + '/modules/.modules') as file:
-            validated_modules = json.load(file)
-        return ('info', repr(validated_modules))
+            modules = json.load(file)
+        return ('info', json.dumps(modules))
 
     def import_module(self, *args):
         module_name = args[0]
