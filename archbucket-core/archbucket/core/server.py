@@ -145,8 +145,8 @@ class Server(metaclass=singleton3.Singleton):
                 api_dict = dict()
                 with open(self.core_path + '/api/.api', 'r') as file:
                     names = json.load(file)
-                for (api_name, [class_name, enabled]) in names.items():
-                    if enabled:
+                for (api_name, [class_name, status]) in names.items():
+                    if status == 'enabled':
                         api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
                         api_module = importlib.reload(api_module)
                         api_instance = eval(f'api_module.{class_name}()')
@@ -200,7 +200,8 @@ class Server(metaclass=singleton3.Singleton):
 
     def get_api_list(self):
         with open(self.core_path + '/api/.api') as file:
-            return ('info', json.load(file))
+            api_dict = json.load(file)
+            return ('info', json.dumps(api_dict))
 
     def set_port(self, port):
         if int(port) > 65535 and int(port) > 0:
