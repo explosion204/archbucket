@@ -62,7 +62,7 @@ class Server(metaclass=singleton3.Singleton):
             'set pipelines': self.set_pipelines, # works
             'get pipelines': self.get_pipelines, # works
             'get api_list': self.get_api_list, # works
-            'set port': self.set_port, # fix
+            'set port': self.set_port, # works
             'get modules': self.get_modules, # works
             'import module': self.import_module, # works
             'remove module': self.remove_module, # works
@@ -75,7 +75,7 @@ class Server(metaclass=singleton3.Singleton):
             'reset config': self.reset_config, # to test
             'run locally': self.run_locally, # to test
             'run globally': self.run_globally, # to test
-            'server status': self.get_server_status, # to improve
+            'server status': self.get_server_status, # to test
             'stop server': self.stop_server, # to test
             'restart server': self.restart_server # to test
         }
@@ -83,9 +83,9 @@ class Server(metaclass=singleton3.Singleton):
     def start_server(self):
         if self.server_configured:
             self.server_thread.start()
-            ip = get('https://api.ipify.org').text if not self.server_is_local and self.check_connection() else self.server.server_address[0]
+            self.ip = get('https://api.ipify.org').text if not self.server_is_local and self.check_connection() else self.server.server_address[0]
             # local case: print internal ip; nonlocal case: print external ip (router)
-            print(f'[success]: Server started with address: {ip}:{self.server.server_address[1]}')
+            print(f'[success]: Server started with address: {self.ip}:{self.server.server_address[1]}')
             self.server_started = True
         else:
             print('[error]: Server has not been configured yet.')
@@ -99,7 +99,7 @@ class Server(metaclass=singleton3.Singleton):
             self.server = ThreadedTCPServer((ip, port), ThreadedTCPRequestHandler)
             self.server_thread = threading.Thread(target=self.server.serve_forever)
         except Exception:
-            print('[error]: Cannot initialize server.')
+            print('[error]: Cannot configure server.')
             return
         print('[success]: Server configured.')
         self.server_configured = True
@@ -264,9 +264,9 @@ class Server(metaclass=singleton3.Singleton):
 
     def get_server_status(self):
         if self.server_is_local:
-            return ('info', 'Server is running locally.')
+            return ('info', f'Server is running locally. Address: {self.ip}:{self.port}')
         else:
-            return ('info', 'Server is running globally.')
+            return ('info', f'Server is running globally. Address: {self.ip}:{self.port}')
 
     def save_config(self):
         with open(self.core_path + '/server.config', 'r') as file:
