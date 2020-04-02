@@ -61,7 +61,7 @@ class Server(metaclass=singleton3.Singleton):
             'bot restart': self.restart_bot, # works
             'bot status': self.get_bot_status, # works
             'set pipelines': self.set_pipelines, # works
-            'get pipelines': 'to implement',
+            'get pipelines': self.get_pipelines, # to test
             'get api_list': self.get_api_list, # to fix
             'set port': self.set_port, # works
             'get modules': self.get_modules, # works
@@ -184,6 +184,9 @@ class Server(metaclass=singleton3.Singleton):
             return ('success', f'Pipelines count set to {number}. Restart bot to apply changes.') 
         else:
             return ('error', 'Number of pipelines cannot be less then 1.')
+
+    def get_pipelines(self):
+        return ('info', f'{self.pipelines_count}')
 
     def get_api_list(self):
         pass
