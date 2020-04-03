@@ -1,16 +1,18 @@
-import threading
+import importlib
+import json
 import socketserver
 import socket
-import json
-import singleton3
-import importlib
+import threading
 import os
+from urllib.request import urlopen
+from urllib.error import URLError
+
+from requests import get
+import singleton3
+
 from .bot import Bot
 from . import manipulator
 from . import error_handler
-from urllib.request import urlopen
-from urllib.error import URLError
-from requests import get
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
@@ -27,25 +29,30 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 recieved_data += partial_data
         except ConnectionResetError:
             # logging manipulations will be added
-            return
+            return None
+        
         response = Server().execute_command(recieved_data)
         # notify client about request status
         if response:
             self.request.sendall(response.encode())
+        return None
 
 class Server(metaclass=singleton3.Singleton):
     def __init__(self):
         self.server_configured = False
         self.server_started = False
         self.bot_running = False
+
         # path to file with api list
         self.core_path = os.path.dirname(__file__)
         self.init_commands()
+
         # default config
         if not os.path.exists(self.core_path + '/server.config'):
             config_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1, 'default_api': 'telegram'}
             with open('server.config', 'w') as file:
                 json.dump(config_dict, file)
+
         # configuring class
         with open(self.core_path + '/server.config') as file:
             config_dict = json.load(file)
@@ -99,9 +106,10 @@ class Server(metaclass=singleton3.Singleton):
             self.server_thread = threading.Thread(target=self.server.serve_forever)
         except Exception:
             print('[error]: Cannot configure server.')
-            return
+            return None
         print('[success]: Server configured.')
         self.server_configured = True
+        return None
 
     def check_connection(self):
         try:
@@ -134,6 +142,7 @@ class Server(metaclass=singleton3.Singleton):
                 api_dict = dict()
                 with open(self.core_path + '/api/.api', 'r') as file:
                     names = json.load(file)
+
                 for (api_name, [class_name, status]) in names.items():
                     if status == 'enabled':
                         api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
@@ -144,6 +153,7 @@ class Server(metaclass=singleton3.Singleton):
                             raise AttributeError
                         error_handler.class_error_handler(api_instance)
                         api_dict[api_name] = api_instance
+                        
                 # new instance of Bot class
                 self.bot = Bot(self.pipelines_count, api_dict)
                 self.bot.start_bot()
@@ -190,7 +200,8 @@ class Server(metaclass=singleton3.Singleton):
     def get_api_list(self):
         with open(self.core_path + '/api/.api') as file:
             api_dict = json.load(file)
-            return ('info', json.dumps(api_dict))
+
+        return ('info', json.dumps(api_dict))
 
     def set_port(self, port):
         if int(port) > 65535 and int(port) > 0:
@@ -206,12 +217,14 @@ class Server(metaclass=singleton3.Singleton):
     def get_modules(self):
         with open(self.core_path + '/modules/.modules') as file:
             modules = json.load(file)
+
         return ('info', json.dumps(modules))
 
     def import_module(self, *args):
         module_name = args[0]
         source_code = ' '.join(args[1:])
         (status, msg) = manipulator.import_module(module_name, source_code)
+
         if status == False:
             return ('error', msg)
         else:
@@ -219,6 +232,7 @@ class Server(metaclass=singleton3.Singleton):
 
     def remove_module(self, module_name):
         (status, msg) = manipulator.remove_module(module_name)
+
         if status == False:
             return ('error', msg)
         else:
@@ -226,6 +240,7 @@ class Server(metaclass=singleton3.Singleton):
 
     def enable_module(self, module_name):
         (status, msg) = manipulator.enable_module(module_name)
+
         if status == False:
             return ('error', msg)
         else:
@@ -233,6 +248,7 @@ class Server(metaclass=singleton3.Singleton):
 
     def disable_module(self, module_name):
         (status, msg) = manipulator.disable_module(module_name)
+
         if status == False:
             return ('error', msg)
         else:
@@ -263,16 +279,20 @@ class Server(metaclass=singleton3.Singleton):
     def save_config(self):
         with open(self.core_path + '/server.config', 'r') as file:
             config_dict = json.load(file)
+
         config_dict['is_local'] = self.server_is_local
         config_dict['port'] = self.port
         config_dict['pipelines_count'] = self.pipelines_count
+
         with open(self.core_path + '/server.config', 'w') as file:
             json.dump(config_dict, file)
         
     def reset_config(self):
         json_dict = {'is_local': True, 'port': 0, 'pipelines_count': 1}
+
         with open(self.core_path + '/server.config', 'w') as file:
             json.dump(json_dict, file)
+
         return ('success', 'Config reset to default state.')
 
     def import_api(self, *args):
@@ -280,14 +300,15 @@ class Server(metaclass=singleton3.Singleton):
         class_name = args[1]
         source_code = ' '.join(args[2:])
         (status, msg) = manipulator.import_api(api_name, class_name, source_code)
+
         if status == False:
             return ('error', msg)
         else:
             return ('success', msg)
-        pass
 
     def remove_api(self, api_name):
         (status, msg) = manipulator.remove_api(api_name)
+
         if status == False:
             return ('error', msg)
         else:
@@ -295,6 +316,7 @@ class Server(metaclass=singleton3.Singleton):
 
     def enable_api(self, api_name):
         (status, msg) = manipulator.enable_api(api_name)
+
         if status == False:
             return ('error', msg)
         else:
@@ -302,6 +324,7 @@ class Server(metaclass=singleton3.Singleton):
 
     def disable_api(self, api_name):
         (status, msg) = manipulator.disable_api(api_name)
+
         if status == False:
             return ('error', msg)
         else:

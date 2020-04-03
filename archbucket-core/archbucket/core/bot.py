@@ -1,6 +1,3 @@
-from .request_router import RequestRouter, Request
-from .pipeline import Pipeline
-from threading import Thread
 import ast
 import re
 import os
@@ -8,17 +5,25 @@ import json
 import importlib
 import inspect
 
+from .pipeline import Pipeline
+from .request_router import RequestRouter, Request
+from threading import Thread
+
 class Bot:
     def __init__(self, pipelines_count, api_dict):
         self.pipelines = list()
+
         for _ in range(pipelines_count):
             # setting pipelines
             new_pipeline = Pipeline(self)
             self.pipelines.append(new_pipeline)
             pipeline_thread = Thread(target=new_pipeline.start)
             pipeline_thread.start()
+
         # setting up request router
         self.request_router = RequestRouter()
+        
+        # loading api classes
         self.api_dict = api_dict
         self.busy = False
 
@@ -37,12 +42,18 @@ class Bot:
 
     def start_bot(self):
         for api_instance in self.api_dict.values():
-            api_thread = Thread(target=api_instance.start, args=(self, ))
-            api_thread.start()
+            try:
+                api_thread = Thread(target=api_instance.start, args=(self, ))
+                api_thread.start()
+            except Exception:
+                pass
 
     def stop_bot(self):
         for api_instance in self.api_dict.values():
-            api_instance.stop()
+            try:
+                api_instance.stop()
+            except Exception:
+                pass
 
     def send_response(self, request: Request):
         self.api_dict[request.api_name].send_response(request)

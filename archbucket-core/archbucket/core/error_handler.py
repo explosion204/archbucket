@@ -16,9 +16,11 @@ def func_error_handler(function):
             # logging logic instead of 'print'
             print (f"{exc_type.__name__} occured. Module: '{filename}'. Function: '{function.__name__}'")
             return True
+            
     return wrapper
 
 def class_error_handler(cls):
     for name, member in inspect.getmembers(cls, lambda x: inspect.isfunction(x) or inspect.ismethod(x)):
         setattr(cls, name, func_error_handler(member))
+
     return cls

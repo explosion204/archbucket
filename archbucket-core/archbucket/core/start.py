@@ -1,5 +1,6 @@
 import json
 from os.path import exists
+
 from .server import Server
 
 def main():
