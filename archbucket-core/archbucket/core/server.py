@@ -132,9 +132,19 @@ class Server(metaclass=singleton3.Singleton):
                 command_text = ' '.join(text.split()[:2])
                 args_list = text.split(' ')[2:]
                 (prefix, message) = self.commands[command_text](*args_list)
-                return f'[{prefix}]: {message}'
+                # return f'[{prefix}]: {message}'
+
+                response = dict()
+                if prefix == 'success' or prefix == 'info':
+                    response['status'] = True
+                else:
+                    response['status'] = False
+                response['message'] = message
+    
+                return json.dumps(response)
             except Exception:
-                return '[error]: Incorrect command.'
+                return json.dumps({'status': False, 'message': 'Incorrect command.'})
+
 
     def start_bot(self):
         try:
