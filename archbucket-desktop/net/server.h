@@ -1,11 +1,17 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#ifdef __WIN32__
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#ifdef _WIN32
+    #ifndef _WIN32_WINNT
+        #define _WIN32_WINNT 0x0501 // win XP
+    #endif
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
 #else
-#include <sys/socket.h>
+    #include <sys/socket.h>
+    #include <arpa/inet.h>
+    #include <netdb.h> //getaddrinfo(), freeaddrinfo()
+    #include <unistd.h> // close()
 #endif
 
 #include <QTcpSocket>
@@ -18,14 +24,13 @@ private:
     QString ip;
     int port;
     bool is_busy;
-public:
-    Server();
-    QString getIp();
-    void setIp(QString ip);
-    int getPort();
-    void setPort(int port);
 
-    bool isBusy();
+public:
+    Server(QString ip, int port);
+    ~Server();
+    QString getIp();
+    int getPort();
+
     bool ping();
     QString getResponse(QString request);
 };
