@@ -30,14 +30,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 recieved_data += partial_data
         except Exception:
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            error_handler.logger.error(f'')
-            return None
+            error_handler.logger.error(f'{exc_type.__name__} occured before data completely recieved data from client.')
         
         response = Server().execute_command(recieved_data)
         # notify client about request status
         if response:
             self.request.sendall(response.encode())
-        return None
 
 class Server(metaclass=singleton3.Singleton):
     def __init__(self):

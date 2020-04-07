@@ -6,8 +6,9 @@ import os
 import inspect
 import logging
 
-logger = logging.getLogger(__name__)
 LOGFILES_PATH = os.path.join(os.path.dirname(__file__), '/logs')
+
+logger = logging.getLogger(__name__)
 
 if not os.path.exists(LOGFILES_PATH):
     os.makedirs(LOGFILES_PATH)
