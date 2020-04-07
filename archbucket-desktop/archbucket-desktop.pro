@@ -20,14 +20,12 @@ SOURCES += \
     gui/loginform.cpp \
     gui/mainform.cpp \
     main.cpp \
-    net/connection.cpp \
     net/server.cpp \
     net/updater.cpp
 
 HEADERS += \
     gui/loginform.h \
     gui/mainform.h \
-    net/connection.h \
     net/server.h \
     net/updater.h
 
