@@ -17,6 +17,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    gui/loginform.cpp \
     gui/mainform.cpp \
     main.cpp \
     net/connection.cpp \
@@ -24,12 +25,14 @@ SOURCES += \
     net/updater.cpp
 
 HEADERS += \
+    gui/loginform.h \
     gui/mainform.h \
     net/connection.h \
     net/server.h \
     net/updater.h
 
 FORMS += \
+    gui/loginform.ui \
     gui/mainform.ui
 
 # Default rules for deployment.

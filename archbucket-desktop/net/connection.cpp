@@ -2,21 +2,26 @@
 
 Connection::Connection(QString ip, int port) : server(ip, port)
 {
-    is_available = true;
-    auto ping_func = [this] ()
+    if (server.ping())
     {
-        while (true)
+        is_available = true;
+        auto ping_func = [this] ()
         {
-            if (server.getResponse("ping").isEmpty())
+            while (true)
             {
-                is_available = false;
-                break;
+                if (server.ping())
+                {
+                    is_available = false;
+                    break;
+                }
+                std::this_thread::sleep_for(std::chrono::seconds(5));
             }
-            std::this_thread::sleep_for(std::chrono::seconds(5));
-        }
-    };
-    std::thread ping_thread(ping_func);
-    ping_thread.detach();
+        };
+        std::thread ping_thread(ping_func);
+        ping_thread.detach();
+    }
+    else
+        is_available = false;
 }
 
 QString Connection::getIp()
@@ -38,4 +43,9 @@ QString Connection::getResponse(QString request)
     if (is_available)
         return server.getResponse(request);
     throw ConnectionException();
+}
+
+bool Connection::isAvailable()
+{
+    return is_available;
 }

@@ -1,7 +1,7 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include <net/server.h>
+#include "net/server.h"
 #include <QString>
 #include <QObject>
 #include <thread>
@@ -18,6 +18,7 @@ public:
 
     QString getIp();
     int getPort();
+    bool isAvailable();
 
     QString getResponse(QString request);
 
