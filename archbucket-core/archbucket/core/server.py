@@ -2,6 +2,7 @@ import importlib
 import json
 import socketserver
 import socket
+import sys
 import threading
 import os
 from urllib.request import urlopen
@@ -27,8 +28,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 if not partial_data:
                     break
                 recieved_data += partial_data
-        except ConnectionResetError:
-            # logging manipulations will be added
+        except Exception:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            error_handler.logger.error(f'')
             return None
         
         response = Server().execute_command(recieved_data)
