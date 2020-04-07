@@ -30,7 +30,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 recieved_data += partial_data
         except Exception:
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            error_handler.logger.error(f'{exc_type.__name__} occured before data completely recieved data from client.')
+            error_handler.logger.error(f'{exc_type.__name__} occured before data completely recieved from client.')
         
         response = Server().execute_command(recieved_data)
         # notify client about request status
