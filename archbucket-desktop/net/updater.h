@@ -3,6 +3,7 @@
 
 #include "net/server.h"
 #include <thread>
+#include <regex>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>

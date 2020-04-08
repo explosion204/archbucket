@@ -16,9 +16,10 @@ void Updater::establishConnection(QString ip, int port)
         {
             while (true)
             {
-                if (server->ping())
+                if (!server->ping())
                 {
                     is_connected = false;
+                    connection_broken();
                     break;
                 }
                 std::this_thread::sleep_for(std::chrono::seconds(interval));
@@ -44,11 +45,40 @@ int Updater::getPort()
     return server->getPort();
 }
 
+QString Updater::getServerStatus()
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("server status");
+        if (response.isEmpty())
+        {
+            connection_broken();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+        std::string message = json_obj["message"].toString().toStdString();
+
+        std::regex reg_expr(R"(^.*(local|global).*$)");
+        std::smatch match;
+        std::regex_match(message, match, reg_expr);
+        if (!match[1].compare("local") || !match[1].compare("global"))
+        {
+            return QString::fromStdString(match[1]);
+        }
+    }
+    throw ConnectionException();
+}
+
 QString Updater::getBotStatus()
 {
     if (is_connected)
     {
         QString response = server->getResponse("bot status");
+        if (response.isEmpty())
+        {
+            connection_broken();
+        }
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
         if (json_obj["status"].toBool())
@@ -58,3 +88,4 @@ QString Updater::getBotStatus()
     }
     throw ConnectionException();
 }
+
