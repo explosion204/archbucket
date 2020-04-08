@@ -7,7 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QList>
+#include <QMap>
 
 class Updater : public QObject
 {
@@ -27,8 +27,8 @@ public:
     QString getServerStatus();
     QString getBotStatus();
     QString getPipelinesCount();
-    QList<QString> getModules();
-    QList<QString> getApiModules();
+    QMap<QString, bool> getModules();
+    QMap<QString, bool> getApiModules();
     QString getLogs();
 
     //set functions

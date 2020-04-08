@@ -108,3 +108,53 @@ QString Updater::getPipelinesCount()
     }
     throw ConnectionException();
 }
+
+QMap<QString, bool> Updater::getModules()
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("get pipelines");
+        if (response.isEmpty())
+        {
+            connection_broken();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        QMap<QString, bool> modules;
+        for (QString key : json_obj.keys())
+        {
+            bool status = !json_obj.value(key).toString().compare("enabled") ? true : false;
+            modules.insert(key, status);
+        }
+
+        return modules;
+    }
+    throw ConnectionException();
+}
+
+QMap<QString, bool> Updater::getApiModules()
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("get pipelines");
+        if (response.isEmpty())
+        {
+            connection_broken();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        QMap<QString, bool> api_modules;
+        for (QString key : json_obj.keys())
+        {
+            bool status = !json_obj.value(key).toArray()[1].toString().compare("enabled") ? true : false;
+            api_modules.insert(key, status);
+        }
+
+        return api_modules;
+    }
+    throw ConnectionException();
+}
