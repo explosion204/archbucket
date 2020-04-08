@@ -53,6 +53,7 @@ QString Updater::getServerStatus()
         if (response.isEmpty())
         {
             connection_broken();
+            throw ConnectionException();
         }
 
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
@@ -62,10 +63,8 @@ QString Updater::getServerStatus()
         std::regex reg_expr(R"(^.*(local|global).*$)");
         std::smatch match;
         std::regex_match(message, match, reg_expr);
-        if (!match[1].compare("local") || !match[1].compare("global"))
-        {
-            return QString::fromStdString(match[1]);
-        }
+
+        return QString::fromStdString(match[1]);
     }
     throw ConnectionException();
 }
@@ -78,9 +77,12 @@ QString Updater::getBotStatus()
         if (response.isEmpty())
         {
             connection_broken();
+            throw ConnectionException();
         }
+
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
+
         if (json_obj["status"].toBool())
             return "running";
         else
@@ -89,3 +91,20 @@ QString Updater::getBotStatus()
     throw ConnectionException();
 }
 
+QString Updater::getPipelinesCount()
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("get pipelines");
+        if (response.isEmpty())
+        {
+            connection_broken();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["message"].toString();
+    }
+    throw ConnectionException();
+}
