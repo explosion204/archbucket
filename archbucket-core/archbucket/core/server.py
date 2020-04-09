@@ -83,7 +83,8 @@ class Server(metaclass=singleton3.Singleton):
             'run locally': self.run_locally, 
             'run globally': self.run_globally,
             'server status': self.get_server_status,
-            'server stop': self.stop_server
+            'server stop': self.stop_server,
+            'get logs': self.get_logs
         }
 
     def start_server(self):
@@ -341,3 +342,7 @@ class Server(metaclass=singleton3.Singleton):
             return ('error', msg)
         else:
             return ('success', msg)
+
+    def get_logs(self):
+        with open(error_handler.LOGFILES_PATH + '/file.log') as log:
+            return ('info', '\n' + log.read())
