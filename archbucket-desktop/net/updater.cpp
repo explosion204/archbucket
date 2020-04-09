@@ -99,6 +99,7 @@ QString Updater::getPipelinesCount()
         if (response.isEmpty())
         {
             connection_broken();
+            throw ConnectionException();
         }
 
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
@@ -117,6 +118,7 @@ QMap<QString, bool> Updater::getModules()
         if (response.isEmpty())
         {
             connection_broken();
+            throw ConnectionException();
         }
 
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
@@ -142,6 +144,7 @@ QMap<QString, bool> Updater::getApiModules()
         if (response.isEmpty())
         {
             connection_broken();
+            throw ConnectionException();
         }
 
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
@@ -155,6 +158,25 @@ QMap<QString, bool> Updater::getApiModules()
         }
 
         return api_modules;
+    }
+    throw ConnectionException();
+}
+
+QString Updater::getLogs()
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("get logs");
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["message"].toString();
     }
     throw ConnectionException();
 }
