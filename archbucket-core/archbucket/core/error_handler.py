@@ -13,6 +13,11 @@ logger = logging.getLogger(__name__)
 if not os.path.exists(LOGFILES_PATH):
     os.makedirs(LOGFILES_PATH)
 
+# clean up log file
+if os.path.exists(LOGFILES_PATH + '/file.log'):
+    file = open(LOGFILES_PATH + '/file.log', 'w')
+    file.close()
+
 f_handler = logging.FileHandler(LOGFILES_PATH + '/file.log')
 f_handler.setLevel(logging.ERROR)
 
