@@ -237,3 +237,79 @@ bool Updater::restartBot()
     }
     throw ConnectionException();
 }
+
+bool Updater::importModule(QString name, QString source_code)
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("import module " + name + " " + source_code);
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
+
+bool Updater::removeModule(QString name)
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("remove module " + name);
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
+
+bool Updater::importApiModule(QString name, QString class_name, QString source_code)
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("import api " + name + " " + class_name + " " + source_code);
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
+
+bool Updater::removeApiModule(QString name)
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("remove api " + name);
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
