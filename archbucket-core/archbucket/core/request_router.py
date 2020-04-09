@@ -1,4 +1,4 @@
-from importlib import import_module, reload
+import importlib
 import json
 import os
 import sys
@@ -19,9 +19,10 @@ class RequestRouter:
         with open(self.modules_path + r'\.modules', 'r') as file:
             names = json.load(file)
 
-        self.modules = {name: import_module(f'.{name}', 'archbucket.core.modules') for name in names.keys() if names[name] == 'enabled'}
+        importlib.import_module = error_handler.func_error_handler(importlib.import_module)
+        self.modules = {name: importlib.import_module(f'.{name}', 'archbucket.core.modules') for name in names.keys() if names[name] == 'enabled'}
         for module in self.modules.values():
-            module = reload(module)
+            module = importlib.reload(module)
             module.run = error_handler.func_error_handler(module.run)
 
     def route(self, request: Request):

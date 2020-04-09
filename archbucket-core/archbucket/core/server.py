@@ -132,7 +132,6 @@ class Server(metaclass=singleton3.Singleton):
                 command_text = ' '.join(text.split()[:2])
                 args_list = text.split(' ')[2:]
                 (prefix, message) = self.commands[command_text](*args_list)
-                # return f'[{prefix}]: {message}'
 
                 response = dict()
                 if prefix == 'success' or prefix == 'info':
@@ -153,6 +152,8 @@ class Server(metaclass=singleton3.Singleton):
                 with open(self.core_path + '/api/.api', 'r') as file:
                     names = json.load(file)
 
+                importlib.import_module = error_handler.func_error_handler(importlib.import_module)
+
                 for (api_name, [class_name, status]) in names.items():
                     if status == 'enabled':
                         api_module = importlib.import_module(f'.{api_name}', 'archbucket.core.api')
@@ -160,7 +161,8 @@ class Server(metaclass=singleton3.Singleton):
                         api_instance = eval(f'api_module.{class_name}()')
                         # checking attributes
                         if not hasattr(api_instance, 'start') or not hasattr(api_instance, 'stop') or not hasattr(api_instance, 'send_response'):
-                            raise AttributeError
+                            error_handler.logger.error(f"AttributeError occured. Make sure a module '{api_module}' has callable attributes 'start', 'strop' and 'send_response'. ")            
+
                         error_handler.class_error_handler(api_instance)
                         api_dict[api_name] = api_instance
                         
