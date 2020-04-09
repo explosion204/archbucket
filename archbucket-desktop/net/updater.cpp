@@ -180,3 +180,60 @@ QString Updater::getLogs()
     }
     throw ConnectionException();
 }
+
+bool Updater::startBot()
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("bot start");
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
+
+bool Updater::stopBot()
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("bot stop");
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
+
+bool Updater::restartBot()
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("bot restart");
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}

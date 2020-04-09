@@ -32,13 +32,13 @@ public:
     QString getLogs();
 
     //set functions
-    void startBot();
-    void stopBot();
-    void restartBot();
-    void importModule(QString name, QString source_code);
-    void removeModule(QString name);
-    void importApiModule(QString name, QString class_name, QString source_code);
-    void removeApiModule(QString name);
+    bool startBot();
+    bool stopBot();
+    bool restartBot();
+    bool importModule(QString name, QString source_code);
+    bool removeModule(QString name);
+    bool importApiModule(QString name, QString class_name, QString source_code);
+    bool removeApiModule(QString name);
 
 signals:
     void connection_broken();
