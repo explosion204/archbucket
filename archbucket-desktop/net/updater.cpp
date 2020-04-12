@@ -114,7 +114,7 @@ QMap<QString, bool> Updater::getModules()
 {
     if (is_connected)
     {
-        QString response = server->getResponse("get pipelines");
+        QString response = server->getResponse("get modules");
         if (response.isEmpty())
         {
             connection_broken();
@@ -123,6 +123,8 @@ QMap<QString, bool> Updater::getModules()
 
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
+        json_doc = QJsonDocument::fromJson(json_obj["message"].toString().toUtf8());
+        json_obj = json_doc.object();
 
         QMap<QString, bool> modules;
         for (QString key : json_obj.keys())
@@ -140,7 +142,7 @@ QMap<QString, bool> Updater::getApiModules()
 {
     if (is_connected)
     {
-        QString response = server->getResponse("get pipelines");
+        QString response = server->getResponse("get api_list");
         if (response.isEmpty())
         {
             connection_broken();
@@ -149,6 +151,8 @@ QMap<QString, bool> Updater::getApiModules()
 
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
+        json_doc = QJsonDocument::fromJson(json_obj["message"].toString().toUtf8());
+        json_obj = json_doc.object();
 
         QMap<QString, bool> api_modules;
         for (QString key : json_obj.keys())

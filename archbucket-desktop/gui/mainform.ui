@@ -204,7 +204,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget_3"/>
+      <widget class="QListWidget" name="apiList"/>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -246,7 +246,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget"/>
+      <widget class="QListWidget" name="modulesList"/>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
