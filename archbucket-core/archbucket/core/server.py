@@ -35,7 +35,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         response = Server().execute_command(recieved_data)
         # notify client about request status
         if response:
-            self.request.sendall(response.encode())
+            self.request.sendall((response + '\0').encode())
 
 class Server(metaclass=singleton3.Singleton):
     def __init__(self):
