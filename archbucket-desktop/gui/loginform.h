@@ -3,8 +3,10 @@
 
 #include <QWidget>
 #include <QMessageBox>
+#include <regex>
 
 #include "net/updater.h"
+#include "gui/mainform.h"
 
 namespace Ui {
 class LoginForm;
