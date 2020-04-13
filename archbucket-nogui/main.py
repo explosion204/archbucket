@@ -64,7 +64,7 @@ while True:
                         break
                     response += data
                     
-                response = json.loads(response)
+                response = json.loads(response[:-1])
                 if response['status'] == True:
                     print('[success]: ', end='')
                 else:
