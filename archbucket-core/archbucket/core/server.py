@@ -35,6 +35,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         response = Server().execute_command(recieved_data)
         # notify client about request status
         if response:
+            # Implicitly NULL-terminated string is for recv() function for working with raw C sockets.
+            # Problem: Qt json parser (C++) is failing to parse string due to absense '\0' character.
+            # Attempt to solve problem directly: concatenating response string at client side with '\0' does not work.
+            # In Python and may be other languages it's important to use all string without last character.
+            # e.g.: response[:-1]
             self.request.sendall((response + '\0').encode())
 
 class Server(metaclass=singleton3.Singleton):
@@ -83,7 +88,6 @@ class Server(metaclass=singleton3.Singleton):
             'run locally': self.run_locally, 
             'run globally': self.run_globally,
             'server status': self.get_server_status,
-            'server stop': self.stop_server,
             'get logs': self.get_logs
         }
 
@@ -110,7 +114,8 @@ class Server(metaclass=singleton3.Singleton):
             return None
         print('[success]: Server configured.')
         self.server_configured = True
-        return None
+        
+        return (ip, self.server.server_address[1])
 
     def check_connection(self):
         try:
@@ -123,9 +128,9 @@ class Server(metaclass=singleton3.Singleton):
         if self.server_started:
             self.server_started = False
             self.server.shutdown()
-            return ('success', 'Server stopped. ')
+            print('Server stopped.')
         else:
-            return ('error', 'Cannot stop server. Is it running?')
+            print('Cannot stop server. Is it running?')
 
     def execute_command(self, text):
         if text:
