@@ -137,13 +137,10 @@ class Server(metaclass=singleton3.Singleton):
             try:
                 command_text = ' '.join(text.split()[:2])
                 args_list = text.split(' ')[2:]
-                (prefix, message) = self.commands[command_text](*args_list)
+                (status, message) = self.commands[command_text](*args_list)
 
                 response = dict()
-                if prefix == 'success' or prefix == 'info':
-                    response['status'] = True
-                else:
-                    response['status'] = False
+                response['status'] = status
                 response['message'] = message
     
                 return json.dumps(response)
@@ -176,123 +173,104 @@ class Server(metaclass=singleton3.Singleton):
                 self.bot = Bot(self.pipelines_count, api_dict)
                 self.bot.start_bot()
                 self.bot_running = True
-                return ('success', 'Bot is running.')
+                return (True, 'Bot is running.')
             else:
-                return ('error', 'Bot is already running.')
+                return (False, 'Bot is already running.')
         except Exception:
-            return ('error', 'Cannot start bot.')
+            return (False, 'Cannot start bot.')
 
     def stop_bot(self):
         try:
             if self.bot_running:
                 self.bot.stop_bot()
                 self.bot_running = False
-                return ('success', 'Bot stopped.')
+                return (True, 'Bot stopped.')
             else:
-                return ('error', 'Bot is not running now.')
+                return (False, 'Bot is not running now.')
         except Exception:
-            return ('error', 'Cannot stop bot.')
+            return (False, 'Cannot stop bot.')
 
     def restart_bot(self):
         try:
             if self.bot_running:
                 self.stop_bot()
                 self.start_bot()
-                return ('success', 'Bot restarted.')
+                return (True, 'Bot restarted.')
             else:
-                return ('error', 'Bot is not running now.')
+                return (False, 'Bot is not running now.')
         except Exception:
-            return ('error', 'Cannot restart bot.')
+            return (False, 'Cannot restart bot.')
 
     def set_pipelines(self, number):
         if int(number) > 0:
             self.pipelines_count = int(number)
             self.save_config()
-            return ('success', f'Pipelines count set to {number}. Restart bot to apply changes.') 
+            return (True, f'Pipelines count set to {number}. Restart bot to apply changes.') 
         else:
-            return ('error', 'Number of pipelines cannot be less then 1.')
+            return (False, 'Number of pipelines cannot be less then 1.')
 
     def get_pipelines(self):
-        return ('info', f'{self.pipelines_count}')
+        return (True, f'{self.pipelines_count}')
 
     def get_api_list(self):
         with open(self.core_path + '/api/.api') as file:
             api_dict = json.load(file)
 
-        return ('info', json.dumps(api_dict))
+        return (True, json.dumps(api_dict))
 
     def set_port(self, port):
         if int(port) > 65535 and int(port) > 0:
-            return ('error', 'Invalid port value.')
+            return (False, 'Invalid port value.')
         else:
             self.port = int(port)
             self.save_config()
-            return ('success', f'Port set to {self.port}. Restart server to apply changes.')
+            return (True, f'Port set to {self.port}. Restart server to apply changes.')
 
     def get_bot_status(self):
-        return ('info', 'Bot is running.') if self.bot_running else ('info', 'Bot is not running.')
+        return (True, 'Bot is running.') if self.bot_running else (False, 'Bot is not running.')
 
     def get_modules(self):
         with open(self.core_path + '/modules/.modules') as file:
             modules = json.load(file)
 
-        return ('info', json.dumps(modules))
+        return (True, json.dumps(modules))
 
     def import_module(self, *args):
         module_name = args[0]
         source_code = ' '.join(args[1:])
-        (status, msg) = manipulator.import_module(module_name, source_code)
 
-        if status == False:
-            return ('error', msg)
-        else:
-            return ('success', msg)
+        return manipulator.import_module(module_name, source_code)
 
     def remove_module(self, module_name):
-        (status, msg) = manipulator.remove_module(module_name)
-
-        if status == False:
-            return ('error', msg)
-        else:
-            return ('success', msg)
+        return manipulator.remove_module(module_name)
 
     def enable_module(self, module_name):
-        (status, msg) = manipulator.enable_module(module_name)
-
-        if status == False:
-            return ('error', msg)
-        else:
-            return ('success', msg)
+        return manipulator.enable_module(module_name)
 
     def disable_module(self, module_name):
-        (status, msg) = manipulator.disable_module(module_name)
-
-        if status == False:
-            return ('error', msg)
-        else:
-            return ('success', msg)
+        return manipulator.disable_module(module_name)
 
     def run_locally(self):
         if not self.server_is_local:
             self.server_is_local = True
             self.save_config()
-            return ('success', 'Server switched to local running. Restart server to apply changes.')
+            return (True, 'Server switched to local running. Restart server to apply changes.')
         else:
-            return ('error', 'Server is already running locally.')
+            return (False, 'Server is already running locally.')
 
     def run_globally(self):
         if self.server_is_local:
             self.server_is_local = False
             self.save_config()
-            return ('success', 'Server switched to global running. Restart server to apply changes.')
+            return (True, 'Server switched to global running. Restart server to apply changes.')
         else:
-            return ('error', 'Server is already running globally.')
+            return (False, 'Server is already running globally.')
 
     def get_server_status(self):
         if self.server_is_local:
-            return ('info', f'Server is running locally. Address: {self.server.server_address[0]}:{self.server.server_address[1]}.')
+            return (True, f'Server is running locally. Address: {self.server.server_address[0]}:{self.server.server_address[1]}.')
         else:
-            return ('info', f'Server is running globally. Address: {self.ip}:{self.server.server_address[1]}.')
+            return (True, f'Server is running globally. Address: {self.ip}:{self.server.server_address[1]}.')
 
     def save_config(self):
         with open(self.core_path + '/server.config', 'r') as file:
@@ -317,37 +295,18 @@ class Server(metaclass=singleton3.Singleton):
         api_name = args[0]
         class_name = args[1]
         source_code = ' '.join(args[2:])
-        (status, msg) = manipulator.import_api(api_name, class_name, source_code)
 
-        if status == False:
-            return ('error', msg)
-        else:
-            return ('success', msg)
+        return manipulator.import_api(api_name, class_name, source_code)
 
     def remove_api(self, api_name):
-        (status, msg) = manipulator.remove_api(api_name)
-
-        if status == False:
-            return ('error', msg)
-        else:
-            return ('success', msg)
+        return manipulator.remove_api(api_name)
 
     def enable_api(self, api_name):
-        (status, msg) = manipulator.enable_api(api_name)
-
-        if status == False:
-            return ('error', msg)
-        else:
-            return ('success', msg)
+        return manipulator.enable_api(api_name)
 
     def disable_api(self, api_name):
-        (status, msg) = manipulator.disable_api(api_name)
-
-        if status == False:
-            return ('error', msg)
-        else:
-            return ('success', msg)
+        return manipulator.disable_api(api_name)
 
     def get_logs(self):
         with open(error_handler.LOGFILES_PATH + '/file.log') as log:
-            return ('info', '\n' + log.read())
+            return (True, '\n' + log.read())
