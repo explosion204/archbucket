@@ -20,13 +20,14 @@ public:
     ~MainForm();
 
 private slots:
-    void on_connectionBroken();
+    void on_connection_broken();
+    void updateInfo();
+
+    void on_startBotButton_clicked();
 
 private:
     Ui::MainForm *ui;
     Updater *updater;
-
-    void updateInfo();
 };
 
 #endif // MAINFORM_H

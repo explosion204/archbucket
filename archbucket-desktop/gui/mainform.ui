@@ -164,7 +164,7 @@
         <enum>QLayout::SetFixedSize</enum>
        </property>
        <item>
-        <widget class="QPushButton" name="pushButton_5">
+        <widget class="QPushButton" name="startBotButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -177,14 +177,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_6">
+        <widget class="QPushButton" name="stopBotButton">
          <property name="text">
           <string>Stop bot</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_7">
+        <widget class="QPushButton" name="restartBptButton">
          <property name="text">
           <string>Restart bot</string>
          </property>
@@ -209,14 +209,14 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="importApiButton">
          <property name="text">
           <string>Import new</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_4">
+        <widget class="QPushButton" name="removeApiButton">
          <property name="text">
           <string>Remove</string>
          </property>
@@ -251,14 +251,14 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="importModuleButton">
          <property name="text">
           <string>Import new</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="removeModuleButton">
          <property name="text">
           <string>Remove</string>
          </property>

@@ -12,6 +12,9 @@ void Updater::establishConnection(QString ip, int port)
     if (server->ping())
     {
         is_connected = true;
+
+        getAllData();
+
         auto ping_func = [this] ()
         {
             while (true)
@@ -22,6 +25,9 @@ void Updater::establishConnection(QString ip, int port)
                     connection_broken();
                     break;
                 }
+
+                getAllData();
+
                 std::this_thread::sleep_for(std::chrono::seconds(interval));
             }
         };
@@ -33,6 +39,17 @@ void Updater::establishConnection(QString ip, int port)
 bool Updater::isConnected()
 {
     return is_connected;
+}
+
+void Updater::getAllData()
+{
+    data.server_status = getServerStatus();
+    data.bot_status = getBotStatus();
+    data.logs = getLogs();
+    data.modules = getModules();
+    data.api_modules = getApiModules();
+    data.pipelines_count = getPipelinesCount();
+    data_updated();
 }
 
 QString Updater::getIp()

@@ -9,6 +9,16 @@
 #include <QJsonArray>
 #include <QMap>
 
+struct ServerData
+{
+    QString server_status;
+    QString bot_status;
+    QString pipelines_count;
+    QMap<QString, bool> modules;
+    QMap<QString, bool> api_modules;
+    QString logs;
+};
+
 class Updater : public QObject
 {
     Q_OBJECT
@@ -17,11 +27,15 @@ private:
     bool is_connected;
     Server *server;
 public:
+    ServerData data;
+
     Updater(int seconds);
     void establishConnection(QString ip, int port);
     bool isConnected();
     QString getIp();
     int getPort();
+
+    void getAllData();
 
     //get functions
     QString getServerStatus();
@@ -42,6 +56,7 @@ public:
 
 signals:
     void connection_broken();
+    void data_updated();
 };
 
 class ConnectionException : public std::exception
