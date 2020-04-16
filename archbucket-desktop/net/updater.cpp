@@ -334,3 +334,79 @@ bool Updater::removeApiModule(QString name)
     }
     throw ConnectionException();
 }
+
+bool Updater::enableModule(QString name)
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("enable module " + name);
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
+
+bool Updater::disableModule(QString name)
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("disable module " + name);
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
+
+bool Updater::enableApiModule(QString name)
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("enable api " + name);
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}
+
+bool Updater::disableApiModule(QString name)
+{
+    if (is_connected)
+    {
+        QString response = server->getResponse("disable api " + name);
+        if (response.isEmpty())
+        {
+            connection_broken();
+            throw ConnectionException();
+        }
+
+        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
+        QJsonObject json_obj = json_doc.object();
+
+        return json_obj["status"].toBool();
+    }
+    throw ConnectionException();
+}

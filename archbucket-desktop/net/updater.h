@@ -35,6 +35,7 @@ public:
     QString getIp();
     int getPort();
 
+    //get all data from server
     void getAllData();
 
     //get functions
@@ -53,6 +54,10 @@ public:
     bool removeModule(QString name);
     bool importApiModule(QString name, QString class_name, QString source_code);
     bool removeApiModule(QString name);
+    bool enableModule(QString name);
+    bool disableModule(QString name);
+    bool enableApiModule(QString name);
+    bool disableApiModule(QString name);
 
 signals:
     void connection_broken();
