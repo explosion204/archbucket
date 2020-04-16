@@ -5,6 +5,7 @@ import sys
 
 from . import error_handler
 from .request import Request
+from constants import MODULES_PATH
 
 class RequestRouter:
     def __init__(self):
@@ -12,11 +13,10 @@ class RequestRouter:
         self.sessions = dict()
 
         # path to 'modules' directory
-        self.modules_path = os.path.join(os.path.dirname(__file__), 'modules')
-        sys.path.append(self.modules_path)
+        sys.path.append(MODULES_PATH)
 
         # Load enabled modules
-        with open(self.modules_path + r'\.modules', 'r') as file:
+        with open(MODULES_PATH + r'\.modules', 'r') as file:
             names = json.load(file)
 
         importlib.import_module = error_handler.func_error_handler(importlib.import_module)
@@ -37,8 +37,7 @@ class RequestRouter:
             # enter module and get flag if session must be closed
             session_exit = self.modules[module_name].run(request)
             if session_exit:
-                del self.sessions[request.id]
-            return None
+                self.sessions.pop(request.id)
 
         try:
             session_exit = self.modules[command].run(request)
@@ -48,4 +47,3 @@ class RequestRouter:
         # add session to track dictionary if script needs it
         if not session_exit:
             self.sessions[request.id] = request.command
-        return None

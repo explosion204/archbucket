@@ -4,25 +4,26 @@ import re
 import socket
 import sys
 
+IP_PATTERN = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
+PORT_PATTERN = r"^\d{1,5}$"
+
 print('ArchBucket | Control App.')
 print('Specify IP-address of ArchBucket server app or leave it empty if it is running on this machine:')
-ip_pattern = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
 
 while True:
     ip = input()
     if not ip:
         ip = socket.gethostbyname(socket.gethostname())
         break
-    if not re.match(ip_pattern, ip):
+    if not re.match(IP_PATTERN, ip):
         print('[error]: Incorrect IP-address form. Try again: ')
     else:
         break
 
 print('Specify port to connect to ArchBucket server app.')
-port_pattern = r"^\d{1,5}$"
 while True:
     port = input()
-    if not re.match(port_pattern, port):
+    if not re.match(PORT_PATTERN, port):
         print('[error]: Incorrect port form. Try again: ')
     else:
         break
