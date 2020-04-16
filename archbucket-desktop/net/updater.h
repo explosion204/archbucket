@@ -59,6 +59,9 @@ public:
     bool enableApiModule(QString name);
     bool disableApiModule(QString name);
 
+    bool setModuleStatus(QString name, bool status);
+    bool setApiModuleStatus(QString name, bool status);
+
 signals:
     void connection_broken();
     void data_updated();

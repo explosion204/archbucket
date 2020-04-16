@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QMessageBox>
+#include <QListWidgetItem>
 
 #include "net/updater.h"
 #include "gui/loginform.h"
@@ -21,9 +22,18 @@ public:
 
 private slots:
     void on_connection_broken();
-    void updateInfo();
+    void updateStatus();
+    void updateListWidgets();
 
     void on_startBotButton_clicked();
+
+    void on_apiList_itemChanged(QListWidgetItem *item);
+
+    void on_modulesList_itemChanged(QListWidgetItem *item);
+
+    void on_refreshApiListButton_clicked();
+
+    void on_refreshModuleList_clicked();
 
 private:
     Ui::MainForm *ui;

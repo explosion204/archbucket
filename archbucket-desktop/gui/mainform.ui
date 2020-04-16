@@ -222,12 +222,19 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="refreshApiListButton">
+         <property name="text">
+          <string>Refresh</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>
    </item>
    <item row="1" column="0">
-    <widget class="QTextBrowser" name="textBrowser">
+    <widget class="QTextBrowser" name="logsTextBrowser">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -261,6 +268,13 @@
         <widget class="QPushButton" name="removeModuleButton">
          <property name="text">
           <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="refreshModuleList">
+         <property name="text">
+          <string>Refresh</string>
          </property>
         </widget>
        </item>
