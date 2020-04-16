@@ -9,7 +9,7 @@ LoginForm::LoginForm(QWidget *parent) :
     setFixedSize(338, 467);
 
     // loading animation
-    loading_movie = new QMovie("E:\\projects\\archbucket\\archbucket-desktop\\91.gif");
+    loading_movie = new QMovie(":/gifs/assets/loading.gif");
     connect(loading_movie, &QMovie::frameChanged, this, &LoginForm::setButtonIcon);
     if (loading_movie->loopCount() != -1)
         connect(loading_movie, &QMovie::finished, loading_movie, &QMovie::start);

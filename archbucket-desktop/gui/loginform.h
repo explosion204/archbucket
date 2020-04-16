@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QMessageBox>
 #include <QMovie>
-#include <QThread>
+#include <QDir>
 #include <regex>
 
 #include "net/updater.h"
