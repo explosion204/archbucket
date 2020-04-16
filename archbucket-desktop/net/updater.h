@@ -47,20 +47,16 @@ public:
     QString getLogs();
 
     //set functions
-    bool startBot();
-    bool stopBot();
-    bool restartBot();
-    bool importModule(QString name, QString source_code);
-    bool removeModule(QString name);
-    bool importApiModule(QString name, QString class_name, QString source_code);
-    bool removeApiModule(QString name);
-    bool enableModule(QString name);
-    bool disableModule(QString name);
-    bool enableApiModule(QString name);
-    bool disableApiModule(QString name);
+    QPair<bool, QString> startBot();
+    QPair<bool, QString> stopBot();
+    QPair<bool, QString> restartBot();
+    QPair<bool, QString> importModule(QString name, QString source_code);
+    QPair<bool, QString> removeModule(QString name);
+    QPair<bool, QString> importApiModule(QString name, QString class_name, QString source_code);
+    QPair<bool, QString> removeApiModule(QString name);
 
-    bool setModuleStatus(QString name, bool status);
-    bool setApiModuleStatus(QString name, bool status);
+    QPair<bool, QString> setModuleStatus(QString name, bool status);
+    QPair<bool, QString> setApiModuleStatus(QString name, bool status);
 
 signals:
     void connection_broken();

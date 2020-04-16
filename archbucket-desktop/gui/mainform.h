@@ -26,13 +26,9 @@ private slots:
     void updateListWidgets();
 
     void on_startBotButton_clicked();
-
     void on_apiList_itemChanged(QListWidgetItem *item);
-
     void on_modulesList_itemChanged(QListWidgetItem *item);
-
     void on_refreshApiListButton_clicked();
-
     void on_refreshModuleList_clicked();
 
 private:

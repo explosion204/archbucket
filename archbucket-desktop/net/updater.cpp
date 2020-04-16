@@ -202,7 +202,7 @@ QString Updater::getLogs()
     throw ConnectionException();
 }
 
-bool Updater::startBot()
+QPair<bool, QString> Updater::startBot()
 {
     if (is_connected)
     {
@@ -216,12 +216,12 @@ bool Updater::startBot()
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }
 
-bool Updater::stopBot()
+QPair<bool, QString> Updater::stopBot()
 {
     if (is_connected)
     {
@@ -235,12 +235,12 @@ bool Updater::stopBot()
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }
 
-bool Updater::restartBot()
+QPair<bool, QString> Updater::restartBot()
 {
     if (is_connected)
     {
@@ -254,12 +254,12 @@ bool Updater::restartBot()
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }
 
-bool Updater::importModule(QString name, QString source_code)
+QPair<bool, QString> Updater::importModule(QString name, QString source_code)
 {
     if (is_connected)
     {
@@ -273,12 +273,12 @@ bool Updater::importModule(QString name, QString source_code)
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }
 
-bool Updater::removeModule(QString name)
+QPair<bool, QString> Updater::removeModule(QString name)
 {
     if (is_connected)
     {
@@ -292,12 +292,12 @@ bool Updater::removeModule(QString name)
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }
 
-bool Updater::importApiModule(QString name, QString class_name, QString source_code)
+QPair<bool, QString> Updater::importApiModule(QString name, QString class_name, QString source_code)
 {
     if (is_connected)
     {
@@ -311,12 +311,12 @@ bool Updater::importApiModule(QString name, QString class_name, QString source_c
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }
 
-bool Updater::removeApiModule(QString name)
+QPair<bool, QString> Updater::removeApiModule(QString name)
 {
     if (is_connected)
     {
@@ -330,12 +330,12 @@ bool Updater::removeApiModule(QString name)
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }
 
-bool Updater::setModuleStatus(QString name, bool status)
+QPair<bool, QString> Updater::setModuleStatus(QString name, bool status)
 {
     if (is_connected)
     {
@@ -355,12 +355,12 @@ bool Updater::setModuleStatus(QString name, bool status)
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }
 
-bool Updater::setApiModuleStatus(QString name, bool status)
+QPair<bool, QString> Updater::setApiModuleStatus(QString name, bool status)
 {
     if (is_connected)
     {
@@ -380,7 +380,7 @@ bool Updater::setApiModuleStatus(QString name, bool status)
         QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
         QJsonObject json_obj = json_doc.object();
 
-        return json_obj["status"].toBool();
+        return QPair<bool, QString>(json_obj["status"].toBool(), json_obj["message"].toString());
     }
     throw ConnectionException();
 }

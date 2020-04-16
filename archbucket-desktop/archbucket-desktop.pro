@@ -17,6 +17,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    gui/importapiform.cpp \
+    gui/importmoduleform.cpp \
     gui/loginform.cpp \
     gui/mainform.cpp \
     main.cpp \
@@ -24,12 +26,16 @@ SOURCES += \
     net/updater.cpp
 
 HEADERS += \
+    gui/importapiform.h \
+    gui/importmoduleform.h \
     gui/loginform.h \
     gui/mainform.h \
     net/server.h \
     net/updater.h
 
 FORMS += \
+    gui/importapiform.ui \
+    gui/importmoduleform.ui \
     gui/loginform.ui \
     gui/mainform.ui
 

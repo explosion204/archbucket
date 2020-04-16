@@ -14,7 +14,7 @@ LoginForm::LoginForm(QWidget *parent) :
     if (loading_movie->loopCount() != -1)
         connect(loading_movie, &QMovie::finished, loading_movie, &QMovie::start);
 
-    connect(this, &LoginForm::connecting_ended, this, &LoginForm::on_connecting_ended, Qt::QueuedConnection);
+    connect(this, &LoginForm::connecting_ended, this, &LoginForm::on_connecting_ended);
 }
 
 LoginForm::~LoginForm()
