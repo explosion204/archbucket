@@ -335,11 +335,17 @@ bool Updater::removeApiModule(QString name)
     throw ConnectionException();
 }
 
-bool Updater::enableModule(QString name)
+bool Updater::setModuleStatus(QString name, bool status)
 {
     if (is_connected)
     {
-        QString response = server->getResponse("enable module " + name);
+        QString response;
+
+        if (status)
+            response = server->getResponse("enable module " + name);
+        else
+            response = server->getResponse("disable module " + name);
+
         if (response.isEmpty())
         {
             connection_broken();
@@ -354,49 +360,17 @@ bool Updater::enableModule(QString name)
     throw ConnectionException();
 }
 
-bool Updater::disableModule(QString name)
+bool Updater::setApiModuleStatus(QString name, bool status)
 {
     if (is_connected)
     {
-        QString response = server->getResponse("disable module " + name);
-        if (response.isEmpty())
-        {
-            connection_broken();
-            throw ConnectionException();
-        }
+        QString response;
 
-        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
-        QJsonObject json_obj = json_doc.object();
+        if (status)
+            response = server->getResponse("enable api " + name);
+        else
+            response = server->getResponse("disable api " + name);
 
-        return json_obj["status"].toBool();
-    }
-    throw ConnectionException();
-}
-
-bool Updater::enableApiModule(QString name)
-{
-    if (is_connected)
-    {
-        QString response = server->getResponse("enable api " + name);
-        if (response.isEmpty())
-        {
-            connection_broken();
-            throw ConnectionException();
-        }
-
-        QJsonDocument json_doc = QJsonDocument::fromJson(response.toUtf8());
-        QJsonObject json_obj = json_doc.object();
-
-        return json_obj["status"].toBool();
-    }
-    throw ConnectionException();
-}
-
-bool Updater::disableApiModule(QString name)
-{
-    if (is_connected)
-    {
-        QString response = server->getResponse("disable api " + name);
         if (response.isEmpty())
         {
             connection_broken();
