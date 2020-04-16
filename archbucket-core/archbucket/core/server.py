@@ -14,6 +14,7 @@ import singleton3
 from .bot import Bot
 from . import manipulator
 from . import error_handler
+from constants import MIN_PORT_VALUE, MAX_PORT_VALUE
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
@@ -219,7 +220,7 @@ class Server(metaclass=singleton3.Singleton):
         return (True, json.dumps(api_dict))
 
     def set_port(self, port):
-        if int(port) > 65535 and int(port) > 0:
+        if int(port) > MAX_PORT_VALUE and int(port) > MIN_PORT_VALUE:
             return (False, 'Invalid port value.')
         else:
             self.port = int(port)
@@ -245,10 +246,10 @@ class Server(metaclass=singleton3.Singleton):
         return manipulator.remove_module(module_name)
 
     def enable_module(self, module_name):
-        return manipulator.enable_module(module_name)
+        return manipulator.set_module_status(module_name, True)
 
     def disable_module(self, module_name):
-        return manipulator.disable_module(module_name)
+        return manipulator.set_module_status(module_name, False)
 
     def run_locally(self):
         if not self.server_is_local:
@@ -302,10 +303,10 @@ class Server(metaclass=singleton3.Singleton):
         return manipulator.remove_api(api_name)
 
     def enable_api(self, api_name):
-        return manipulator.enable_api(api_name)
+        return manipulator.set_api_status(api_name, True)
 
     def disable_api(self, api_name):
-        return manipulator.disable_api(api_name)
+        return manipulator.set_api_status(api_name, False)
 
     def get_logs(self):
         with open(error_handler.LOGFILES_PATH + '/file.log') as log:

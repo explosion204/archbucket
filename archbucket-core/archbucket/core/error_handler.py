@@ -6,7 +6,7 @@ import os
 import inspect
 import logging
 
-LOGFILES_PATH = os.path.dirname(__file__) + '/logs'
+from constants import LOGFILES_PATH
 
 logger = logging.getLogger(__name__)
 

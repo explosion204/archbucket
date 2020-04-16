@@ -13,8 +13,8 @@ class Bot:
     def __init__(self, pipelines_count, api_dict):
         self.pipelines = list()
 
+        # setting pipelines
         for _ in range(pipelines_count):
-            # setting pipelines
             new_pipeline = Pipeline(self)
             self.pipelines.append(new_pipeline)
             pipeline_thread = Thread(target=new_pipeline.start)
