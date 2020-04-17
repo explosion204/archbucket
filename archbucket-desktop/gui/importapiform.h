@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QMovie>
 
 #include "net/updater.h"
 
@@ -29,6 +30,7 @@ private:
     QWidget *parent;
     Updater *updater;
     QFile *file;
+    QMovie *loading_movie;
 };
 
 #endif // IMPORTAPIFORM_H

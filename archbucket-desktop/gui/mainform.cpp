@@ -11,12 +11,17 @@ MainForm::MainForm(Updater *updater, QWidget *parent) :
     connect(updater, &Updater::data_updated, this, &MainForm::updateStatus);
     updateStatus();
     updateListWidgets();
+
+    // loading animation
+    loading_movie = new QMovie(":/gifs/assets/loading.gif");
+    loading_button = nullptr;
 }
 
 MainForm::~MainForm()
 {
     delete ui;
     delete updater;
+    delete loading_movie;
 }
 
 void MainForm::on_connection_broken()
@@ -102,7 +107,7 @@ void MainForm::on_refreshApiListButton_clicked()
     }
 }
 
-void MainForm::on_refreshModuleList_clicked()
+void MainForm::on_refreshModuleListButton_clicked()
 {
     auto modules_list = updater->data.modules;
 
@@ -122,43 +127,66 @@ void MainForm::on_refreshModuleList_clicked()
 
 void MainForm::on_startBotButton_clicked()
 {
-    auto response = updater->startBot();
-    if (!response.first)
+    loading_button = ui->startBotButton;
+    setLoadingButtonState(true);
+    // block buttons
+    setControlsState(false);
+
+    connect(this, &MainForm::display_message, this, [this] (bool type, QString message)
     {
-        QMessageBox::warning(this, "Error", response.second);
-    }
-    else
+        setLoadingButtonState(false);
+        on_display_message(type, message);
+        disconnect();
+    });
+
+    std::thread([this]
     {
-        QMessageBox::information(this, "Info", response.second);
-        ui->botStatusLabel->setText("running");
-    }
+       auto response = updater->startBot();
+       display_message(response.first, response.second);
+    }).detach();
+
 }
 
 void MainForm::on_stopBotButton_clicked()
 {
-    auto response = updater->stopBot();
-    if (!response.first)
+    loading_button = ui->stopBotButton;
+    setLoadingButtonState(true);
+    // block buttons
+    setControlsState(false);
+
+    connect(this, &MainForm::display_message, this, [this] (bool type, QString message)
     {
-        QMessageBox::warning(this, "Error", response.second);
-    }
-    else
+        setLoadingButtonState(false);
+        on_display_message(type, message);
+        disconnect();
+    });
+
+    std::thread([this]
     {
-        QMessageBox::information(this, "Info", response.second);
-        ui->botStatusLabel->setText("not running");
-    }
+       auto response = updater->stopBot();
+       display_message(response.first, response.second);
+    }).detach();
 }
 
-void MainForm::on_restartBptButton_clicked()
+void MainForm::on_restartBotButton_clicked()
 {
-    auto response = updater->restartBot();
-    if (!response.first)
+    loading_button = ui->restartBotButton;
+    setLoadingButtonState(true);
+    // block buttons
+    setControlsState(false);
+
+    connect(this, &MainForm::display_message, this, [this] (bool type, QString message)
     {
-        QMessageBox::warning(this, "Error", response.second);
-    }
-    else
+        setLoadingButtonState(false);
+        on_display_message(type, message);
+        disconnect();
+    });
+
+    std::thread([this]
     {
-        QMessageBox::information(this, "Info", response.second);
-    }
+       auto response = updater->restartBot();
+       display_message(response.first, response.second);
+    }).detach();
 }
 
 void MainForm::on_importApiButton_clicked()
@@ -169,4 +197,146 @@ void MainForm::on_importApiButton_clicked()
 void MainForm::on_importModuleButton_clicked()
 {
     (new ImportModuleForm(updater, this))->show();
+}
+
+void MainForm::on_removeApiButton_clicked()
+{
+    if (ui->apiList->currentRow() != -1)
+    {
+        int choice = QMessageBox::warning(this, "Warning", "Delete this api module?", QMessageBox::Yes, QMessageBox::Cancel);
+        switch (choice)
+        {
+            case QMessageBox::Yes:
+            {
+                loading_button = ui->removeApiButton;
+                setLoadingButtonState(true);
+                // block buttons
+                setControlsState(false);
+
+                connect(this, &MainForm::display_message, this, [this] (bool type, QString message)
+                {
+                    setLoadingButtonState(false);
+                    on_display_message(type, message);
+                    disconnect();
+                });
+                connect(this, &MainForm::item_removed, this, &MainForm::on_item_removed);
+
+                std::thread([this] ()
+                {
+                    auto response = updater->removeApiModule(ui->apiList->currentItem()->text());
+
+                    if (response.first)
+                        item_removed(ui->apiList, ui->apiList->currentRow());
+
+                    display_message(response.first, response.second);
+                }).detach();
+
+                break;
+            }
+            case QMessageBox::No:
+                break;
+        }
+    }
+}
+
+void MainForm::on_removeModuleButton_clicked()
+{
+    if (ui->modulesList->currentRow() != -1)
+    {
+        int choice = QMessageBox::warning(this, "Warning", "Delete this module?", QMessageBox::Yes, QMessageBox::Cancel);
+        switch (choice)
+        {
+            case QMessageBox::Yes:
+            {
+                loading_button = ui->removeModuleButton;
+                setLoadingButtonState(true);
+                // block buttons
+                setControlsState(false);
+
+                connect(this, &MainForm::display_message, this, [this] (bool type, QString message)
+                {
+                    setLoadingButtonState(false);
+                    on_display_message(type, message);
+                    disconnect();
+                });
+                connect(this, &MainForm::item_removed, this, &MainForm::on_item_removed);
+
+                std::thread([this] ()
+                {
+                    auto response = updater->removeModule(ui->modulesList->currentItem()->text());
+
+                    if (response.first)
+                        item_removed(ui->modulesList, ui->modulesList->currentRow());
+
+                    display_message(response.first, response.second);
+                }).detach();
+
+                break;
+            }
+            case QMessageBox::No:
+                break;
+        }
+    }
+}
+
+void MainForm::setLoadingButtonState(bool state)
+{
+    if (loading_button != nullptr)
+    {
+        if (state)
+        {
+            connect(loading_movie, &QMovie::frameChanged, this, [this] ()
+            {
+               loading_button->setIcon(QIcon(loading_movie->currentPixmap()));
+            }
+            );
+            if (loading_movie->loopCount() != -1)
+                connect(loading_movie, &QMovie::finished, loading_movie, &QMovie::start);
+
+            loading_button->setEnabled(false);
+            loading_movie->start();
+        }
+        else
+        {
+            loading_movie->stop();
+            loading_button->setIcon(QIcon());
+            loading_button->setEnabled(true);
+        }
+    }
+}
+
+void MainForm::on_display_message(bool type, QString message)
+{
+    QString title = type ? "Info" : "Error";
+    QMessageBox::warning(this, title, message);
+
+    //unblock buttons
+    setControlsState(true);
+}
+
+void MainForm::on_item_removed(QListWidget *list_widget, int item_row)
+{
+    list_widget->takeItem(item_row);
+}
+
+void MainForm::setControlsState(bool state)
+{
+    ui->apiList->setEnabled(state);
+    ui->modulesList->setEnabled(state);
+
+    ui->startBotButton->setEnabled(state);
+    ui->stopBotButton->setEnabled(state);
+    ui->restartBotButton->setEnabled(state);
+    ui->importApiButton->setEnabled(state);
+    ui->importModuleButton->setEnabled(state);
+    ui->removeApiButton->setEnabled(state);
+    ui->removeModuleButton->setEnabled(state);
+    ui->refreshApiListButton->setEnabled(state);
+    ui->refreshModuleListButton->setEnabled(state);
+
+    // except loading button
+    if (state)
+        loading_button->setEnabled(true);
+    else
+        loading_button->setEnabled(false);
 }

@@ -40,7 +40,7 @@ void LoginForm::on_connectButton_clicked()
 
             std::thread([this] ()
             {
-                Updater *updater = new Updater(5);
+                Updater *updater = new Updater(1);
                 updater->establishConnection(ui->ipEdit->text(), ui->portEdit->text().toInt());
                 connecting_ended(updater->isConnected(), updater);
 
@@ -57,7 +57,6 @@ void LoginForm::on_connecting_ended(bool result, Updater *updater)
     {
         close();
         (new MainForm(updater))->show();
-        delete this;
     }
     else
     {
@@ -70,7 +69,7 @@ void LoginForm::on_connecting_ended(bool result, Updater *updater)
     }
 }
 
-void LoginForm::setButtonIcon(int frame)
+void LoginForm::setButtonIcon()
 {
     ui->connectButton->setIcon(QIcon(loading_movie->currentPixmap()));
 }

@@ -27,7 +27,7 @@ signals:
 
 private slots:
     void on_connectButton_clicked();
-    void setButtonIcon(int frame);
+    void setButtonIcon();
 
     void on_connecting_ended(bool result, Updater *updater);
 

@@ -8,6 +8,7 @@ ImportModuleForm::ImportModuleForm(Updater *updater, QWidget *parent) :
     ui->setupUi(this);
     this->updater = updater;
     this->parent = parent;
+    loading_movie = new QMovie(":/gifs/assets/loading.gif");
 }
 
 ImportModuleForm::~ImportModuleForm()
@@ -18,6 +19,7 @@ ImportModuleForm::~ImportModuleForm()
         file->close();
 
     delete file;
+    delete loading_movie;
 }
 
 void ImportModuleForm::on_openButton_clicked()
