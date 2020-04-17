@@ -20,6 +20,7 @@ LoginForm::LoginForm(QWidget *parent) :
 LoginForm::~LoginForm()
 {
     delete ui;
+    delete loading_movie;
 }
 
 void LoginForm::on_connectButton_clicked()
@@ -56,6 +57,7 @@ void LoginForm::on_connecting_ended(bool result, Updater *updater)
     {
         close();
         (new MainForm(updater))->show();
+        delete this;
     }
     else
     {

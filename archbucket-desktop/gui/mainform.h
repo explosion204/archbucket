@@ -7,6 +7,8 @@
 
 #include "net/updater.h"
 #include "gui/loginform.h"
+#include "gui/importapiform.h"
+#include "gui/importmoduleform.h"
 
 namespace Ui {
 class MainForm;
@@ -30,6 +32,12 @@ private slots:
     void on_modulesList_itemChanged(QListWidgetItem *item);
     void on_refreshApiListButton_clicked();
     void on_refreshModuleList_clicked();
+
+    void on_stopBotButton_clicked();
+
+    void on_restartBptButton_clicked();
+
+    void on_importApiButton_clicked();
 
 private:
     Ui::MainForm *ui;

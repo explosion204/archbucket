@@ -16,6 +16,7 @@ MainForm::MainForm(Updater *updater, QWidget *parent) :
 MainForm::~MainForm()
 {
     delete ui;
+    delete updater;
 }
 
 void MainForm::on_connection_broken()
@@ -23,6 +24,7 @@ void MainForm::on_connection_broken()
     QMessageBox::warning(this, "Connection error", "Connection to server is broken.");
     close();
     (new LoginForm)->show();
+    delete this;
 }
 
 void MainForm::updateStatus()
@@ -64,11 +66,6 @@ void MainForm::updateListWidgets()
             ui->modulesList->item(i)->setCheckState(Qt::CheckState::Unchecked);
         i++;
     }
-}
-
-void MainForm::on_startBotButton_clicked()
-{
-
 }
 
 void MainForm::on_apiList_itemChanged(QListWidgetItem *item)
@@ -121,4 +118,50 @@ void MainForm::on_refreshModuleList_clicked()
             ui->modulesList->item(i)->setCheckState(Qt::CheckState::Unchecked);
         i++;
     }
+}
+
+void MainForm::on_startBotButton_clicked()
+{
+    auto response = updater->startBot();
+    if (!response.first)
+    {
+        QMessageBox::warning(this, "Error", response.second);
+    }
+    else
+    {
+        QMessageBox::information(this, "Info", response.second);
+        ui->botStatusLabel->setText("running");
+    }
+}
+
+void MainForm::on_stopBotButton_clicked()
+{
+    auto response = updater->stopBot();
+    if (!response.first)
+    {
+        QMessageBox::warning(this, "Error", response.second);
+    }
+    else
+    {
+        QMessageBox::information(this, "Info", response.second);
+        ui->botStatusLabel->setText("not running");
+    }
+}
+
+void MainForm::on_restartBptButton_clicked()
+{
+    auto response = updater->restartBot();
+    if (!response.first)
+    {
+        QMessageBox::warning(this, "Error", response.second);
+    }
+    else
+    {
+        QMessageBox::information(this, "Info", response.second);
+    }
+}
+
+void MainForm::on_importApiButton_clicked()
+{
+
 }
