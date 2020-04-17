@@ -5,7 +5,7 @@ import sys
 
 from . import error_handler
 from .request import Request
-from constants import MODULES_PATH
+from archbucket.core.constants import MODULES_PATH
 
 class RequestRouter:
     def __init__(self):

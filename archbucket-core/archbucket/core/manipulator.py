@@ -3,7 +3,7 @@ import json
 import os
 import re
 
-from constants import API_PATH, DISABLED, ENABLED, MODULES_PATH
+from archbucket.core.constants import API_PATH, DISABLED, ENABLED, MODULES_PATH
 
 def import_module(module_name, source_code) -> (bool, str):
     try:

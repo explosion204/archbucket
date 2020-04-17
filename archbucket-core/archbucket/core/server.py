@@ -14,7 +14,7 @@ import singleton3
 from .bot import Bot
 from . import manipulator
 from . import error_handler
-from constants import MIN_PORT_VALUE, MAX_PORT_VALUE
+from archbucket.core.constants import MIN_PORT_VALUE, MAX_PORT_VALUE
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
