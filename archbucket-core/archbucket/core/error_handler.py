@@ -6,7 +6,7 @@ import os
 import inspect
 import logging
 
-from constants import LOGFILES_PATH
+from archbucket.core.constants import LOGFILES_PATH
 
 logger = logging.getLogger(__name__)
 
