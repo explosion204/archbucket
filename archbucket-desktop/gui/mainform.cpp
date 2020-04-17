@@ -163,5 +163,10 @@ void MainForm::on_restartBptButton_clicked()
 
 void MainForm::on_importApiButton_clicked()
 {
+    (new ImportApiForm(updater, this))->show();
+}
 
+void MainForm::on_importModuleButton_clicked()
+{
+    (new ImportModuleForm(updater, this))->show();
 }

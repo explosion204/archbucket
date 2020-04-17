@@ -39,6 +39,8 @@ private slots:
 
     void on_importApiButton_clicked();
 
+    void on_importModuleButton_clicked();
+
 private:
     Ui::MainForm *ui;
     Updater *updater;
