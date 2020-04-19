@@ -2,8 +2,11 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+from datetime import date
+
 class ItemType(models.Model):
     name = models.CharField(verbose_name='Name', max_length=20)
+    description = models.TextField(verbose_name='Description')
     url = models.SlugField(max_length=150, unique=True)
 
 class Item(models.Model):
@@ -24,10 +27,7 @@ class Rating(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     value = models.FloatField(verbose_name='Value', default=5.0, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
 
-class Releases(models.Model):
+class Release(models.Model):
     name = models.CharField(verbose_name='Name', max_length=20)
     version = models.CharField(verbose_name='Version', max_length=10)
     changelog = models.TextField(verbose_name='Changelog')
-
-    
-    

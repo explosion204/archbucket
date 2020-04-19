@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css" type="text/css"/>
+        <meta charset="utf-8">
+        <title>ArchBucket Index | APIs</title>
+    </head>
+    <body>
+        <div class="header-grid">
+            <div class="header-grid-item">logo</div>
+            <div class="header-grid-item">sign up</div>
+            <div class="header-grid-item">sign in</div>
+        </div>
+
+        <br/>
+
+        <h3 class="category-title">{{ items_type.name }}</h3>
+        <h5 class="category-desc">{{ items_type.description }}</h5>
+
+        <br/>
+        {% for item in item %}
+        <div class="item">
+            {{ item.name }}
+        </div>
+        {% endfor %}
+
+    </body>
+</html>
