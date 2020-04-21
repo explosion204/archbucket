@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <title>{% block title %}{% endblock title %}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+        <link rel="stylesheet" href="{% static 'style.css' %}"> 
+    </head>
+
+    <body>
+        <!-- Navbar (sit on top) -->
+        <div class="top">
+        <div class="bar white wide padding card">
+            <a href="#home" class="bar-item button"><b>ArchBucket</b> index</a>
+            <!-- Float links to the right. Hide them on small screens -->
+            <div class="right hide-small">
+            <a href="#about" class="bar-item button">About</a>
+            <a class="bar-item button">Sign in</a>
+            <a class="bar-item button">Sign up</a>
+            </div>
+        </div>
+        </div>
+
+        <!-- Page content -->
+        <div class="content padding" style="max-width:1564px">
+        {% block content %}
+
+        {% endblock content %}
+    </body>
+</html>

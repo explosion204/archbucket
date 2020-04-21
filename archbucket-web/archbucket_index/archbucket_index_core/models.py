@@ -6,8 +6,8 @@ from datetime import date
 
 class ItemType(models.Model):
     name = models.CharField(verbose_name='Name', max_length=20)
-    description = models.TextField(verbose_name='Description')
-    url = models.SlugField(max_length=150, unique=True)
+    description = models.TextField(verbose_name='Description', default='desc')
+    url = models.SlugField(max_length=150, unique=True, default=None)
 
 class Item(models.Model):
     name = models.CharField(verbose_name='Name', max_length=20)
@@ -15,7 +15,7 @@ class Item(models.Model):
     source_code = models.TextField(verbose_name='Source code')
     documentation = models.TextField(verbose_name='Documentation')
     item_type = models.ForeignKey(ItemType, verbose_name='Item type', on_delete=models.CASCADE)
-    url = models.SlugField(max_length=150, unique=True)
+    url = models.SlugField(max_length=150, unique=True, default=None)
 
 class Feedback(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)

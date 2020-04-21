@@ -1,28 +1,12 @@
-<!DOCTYPE HTML>
-<html>
-    <head>
-        <link rel="stylesheet" href="style.css" type="text/css"/>
-        <meta charset="utf-8">
-        <title>ArchBucket Index | APIs</title>
-    </head>
-    <body>
-        <div class="header-grid">
-            <div class="header-grid-item">logo</div>
-            <div class="header-grid-item">sign up</div>
-            <div class="header-grid-item">sign in</div>
-        </div>
-
-        <br/>
-
-        <h3 class="category-title">{{ items_type.name }}</h3>
-        <h5 class="category-desc">{{ items_type.description }}</h5>
-
-        <br/>
-        {% for item in item %}
-        <div class="item">
-            {{ item.name }}
-        </div>
-        {% endfor %}
-
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Archbucket Index | {{ items_type.name }}{% endblock title %}
+{% block content %}
+    <div class="container padding-32" id="projects">
+        <h3 class="border-bottom border-light-grey padding-16">{{ items_type.name }}</h3>
+        <h4>{{ items_type.description }}</h4>
+    </div>
+    <br/>
+    {% for item in items %}
+        <a href="/{{ item.item_type.url }}/{{ item.url }}">{{ item.name }}</a>
+    {% endfor %}
+{% endblock content %}

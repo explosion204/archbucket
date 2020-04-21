@@ -13,12 +13,18 @@ class IndexView(View):
         return render(request, 'index.html', {'item_types': item_types, 'releases': releases})
 
 class ItemsListView(View):
-    def get(self, request, item_url):
-        items_type = ItemType.objects.get(url=item_url)
+    def get(self, request, type_url):
+        items_type = ItemType.objects.get(url=type_url)
         items = Item.objects.filter(item_type__name=items_type.name)
 
         return render(request, 'item_list.html', {'items_type': items_type, 'items': items})
 
-class ItemDetailView(DetailView):
-    model = Item
-    slug_field = 'url'
+# class ItemDetailView(DetailView):
+#     model = Item
+#     slug_field = 'url'
+
+class ItemDetailView(View):
+    def get(self, request, type_url, item_url):
+        item = Item.objects.get(url=item_url)
+
+        return render(request, 'item_detail.html', {'item': item})
