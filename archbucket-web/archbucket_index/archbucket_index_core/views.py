@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import DetailView
 from django.views.generic.base import View
@@ -12,18 +13,18 @@ class IndexView(View):
 
         return render(request, 'index.html', {'item_types': item_types, 'releases': releases})
 
-class ItemsListView(View):
+class ItemsListView(LoginRequiredMixin, View):
+    login_url = 'accounts/login/'
+
     def get(self, request, type_url):
         items_type = ItemType.objects.get(url=type_url)
         items = Item.objects.filter(item_type__name=items_type.name)
 
         return render(request, 'item_list.html', {'items_type': items_type, 'items': items})
 
-# class ItemDetailView(DetailView):
-#     model = Item
-#     slug_field = 'url'
+class ItemDetailView(LoginRequiredMixin,View):
+    login_url = 'accounts/login'
 
-class ItemDetailView(View):
     def get(self, request, type_url, item_url):
         item = Item.objects.get(url=item_url)
 

@@ -11,13 +11,17 @@
     <body>
         <!-- Navbar (sit on top) -->
         <div class="top">
-        <div class="bar white wide padding card">
-            <a href="#home" class="bar-item button"><b>ArchBucket</b> index</a>
+        <div class="bar white padding card">
+            <a href="/" class="bar-item button"><b>ArchBucket</b> index</a>
             <!-- Float links to the right. Hide them on small screens -->
             <div class="right hide-small">
-            <a href="#about" class="bar-item button">About</a>
-            <a class="bar-item button">Sign in</a>
-            <a class="bar-item button">Sign up</a>
+                {% if user.is_authenticated %}
+                    <a class="bar-item button">Logged as <b>{{ user.get_username }}</b></a>
+                    <a class="bar-item button" href="/accounts/logout/">Logout</a>
+                {% else %}
+                    <a class="bar-item button" href="/accounts/login/">Sign in</a>
+                    <a class="bar-item button">Sign up</a>
+                {% endif %}
             </div>
         </div>
         </div>
