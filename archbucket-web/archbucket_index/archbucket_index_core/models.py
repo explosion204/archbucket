@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -41,7 +42,7 @@ class Rating(models.Model):
         count = len(Rating.objects.filter(item=self.item))
 
         try:
-            former_rating = Rating.objects.get(user=self.user)
+            former_rating = Rating.objects.get(Q(user=self.user) | Q(item=self.item))
             former_rating_value = Rating.objects.get(user=self.user).value
             former_rating.delete()
             self.item.item_rating = (self.item.item_rating * count - former_rating_value + int(self.value)) / count
