@@ -4,9 +4,18 @@
     <div class="container padding-32" id="projects">
         <h3 class="border-bottom border-light-grey padding-16">{{ items_type.name }}</h3>
         <h4>{{ items_type.description }}</h4>
+        <h5>
+            <a href="/{{ items_type.url }}/add_item">New item</a>
+        </h5>
     </div>
     <br/>
-    {% for item in items %}
-        <a href="/{{ item.item_type.url }}/{{ item.url }}">{{ item.name }}</a>
-    {% endfor %}
+    <table>
+        {% for item in items %}
+            <tr>
+                <th>
+                    <a href="/{{ item.item_type.url }}/{{ item.url }}">{{ item.name }}</a>
+                </th>
+            </tr>
+        {% endfor %} 
+    </table>
 {% endblock content %}

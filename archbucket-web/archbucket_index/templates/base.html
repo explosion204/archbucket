@@ -5,7 +5,8 @@
         <title>{% block title %}{% endblock title %}</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"> -->
-        <link rel="stylesheet" href="{% static 'style.css' %}"> 
+        <link rel="stylesheet" href="{% static 'css/style.css' %}"> 
+        <script src="{% static 'js/numbering_textarea.js' %}"></script>
     </head>
 
     <body>
@@ -28,6 +29,8 @@
 
         <!-- Page content -->
         <div class="content padding" style="max-width:1564px">
+        <br/>
+        <br/>
         {% block content %}
 
         {% endblock content %}

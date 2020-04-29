@@ -1,6 +1,191 @@
-<!DOCTYPE html>
-<html>
-    <body>
-        <div>{{ item.name }}</div>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %}ArchBucket Index | {{ item.items_type.name }} '{{ item.name }}'{% endblock title %}
+{% block content %}
+    <style>
+        .rownr {
+            overflow-y: hidden; 
+            background-color: darkgray; 
+            color: white; 
+            text-align: right; 
+            vertical-align:top; 
+            z-index: 0
+        }
+
+        .txt {
+            width: 95%;
+            overflow-x: scroll;
+            background: transparent;
+            z-index: 0
+        }
+
+        .content-table {
+            text-align: left;
+            width: 100%;
+        }
+
+        .comment-textarea {
+            resize: none;
+            width: 100%;
+        }
+
+        .textarea {
+            resize: none;
+            width: 100%;
+            overflow: auto;
+            border-width: 0.1ch;
+            border-style: ridge;
+        }
+
+        .label {
+            float: left;
+            word-break: break-word;
+            max-width: 100%;
+            font-weight: normal;
+        }
+    </style>
+
+    <table class="content-table">
+        <tr>
+            <th>
+                <label><b>Name</b></label>
+            </th>
+            <th>
+                <label>{{ item.name }}</label>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <label><b>Status</b></label>
+            </th>
+            <th>
+                <label>{{ item.get_status_display }}</label>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <label><b>Item rating</b></label>
+            </th>
+            <th>
+                <label>{{ item.item_rating }} ({{ item.votes }} votes)</label>
+            </th>
+        </tr>
+        {% if can_rate %}
+            {% if is_user_rated %}
+                <tr>
+                    <th>
+                        <label><b>Your rate</b></label>
+                    </th>
+                    <th>
+                        <label>{{ user_rating }}</label>
+                    </th>
+                </tr>
+            {% else %}
+                <tr>
+                    <th>
+                        <label>You have not rated this item yet!</label>
+                    </th>
+                </tr>
+            {% endif %}
+            <form action="{% url 'save_rating' %}" method="post">
+                {% csrf_token %}
+                <tr>
+                    <th>
+                        {{ rating_form }}
+                    </th>
+                    <th>
+                        <input type="submit" value="Save">
+                    </th>
+                </tr>
+            </form>
+        {% endif %}
+        <tr>
+            <th>
+                <label><b>Description</b></label>
+            </th>
+            <th>
+                <label class="label">{{ item.description }}</label>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <label><b>Source code</b></label>
+            </th>
+            <th>
+                <textarea class="rownr" rows="20" cols="3" value="1" readonly></textarea>
+                <span>
+                    <textarea id="text" class="txt" rows="20" cols="150" nowrap="nowrap" wrap="off"
+                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" readonly
+                        onclick="selectionchanged(this)" onkeyup="keyup(this,event)" oninput="input_changed(this)" 
+                        onscroll="scroll_changed(this)">{{ item.source_code }}</textarea>
+                </span>
+                <script>
+                    input_changed(document.getElementById("text"));
+                </script>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <label><b>Documentation</b></label>
+            </th>
+            <th>
+                <label class="label">{{ item.documentation }}</label>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <label>Actions:</label>
+            </th>
+            <th>
+                {% if can_edit %}
+                    <a href="/{{ item.item_type.url }}/{{ item.url }}/edit">Edit</a>
+                {% endif %}
+                {% if can_remove %}
+                    <a style="padding-left: 1%;" href="/{{ item.item_type.url }}/{{ item.url }}/remove">Remove</a>
+                {% endif %}
+            </th>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h3><b>Comments</b></h3>
+
+    {% if can_comment %}
+        <form action="{% url 'save_comment' %}" method="post">
+            {% csrf_token %}
+            <table class="content-table">
+                <tr>
+                    <th>
+                        {{ comment_form }}
+                    </th>
+                </tr>
+            </table>
+            <input type="submit" value="Save">
+        </form>
+        <br/>
+    {% endif %}
+
+    {% for comment in comments %}
+        <table class="content-table">
+            <tr>
+                <th>
+                    <label>{{ comment.user.get_username }}</label>
+                    <label style="padding-left: 1%;">{{ comment.datetime }}</label>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <textarea class="textarea" readonly >{{ comment.text }}</textarea>
+                </th>
+            </tr>
+            {% if user == comment.user or user.is_staff %}
+                <tr>
+                    <th>
+                        <label><b>Action:</b></label>
+                        <a href="/{{ comment.id }}/remove">Remove</a>
+                    </th>
+                </tr>
+            {% endif %}
+        </table>
+    {% endfor %}
+{% endblock content %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}ArchBucket Index | {{ operation }}{% endblock title %}
+{% block content %}
+    {% if form.errors %}
+        <p>...</p>
+    {% endif %}   
+
+    <style>
+        .content-table {
+            text-align: left;
+            width: 100%;
+        }
+
+        .rownr {
+            overflow-y: hidden; 
+            background-color: darkgray; 
+            color: white; 
+            text-align: right; 
+            vertical-align:top; 
+            z-index: 0
+        }
+
+        .txt {
+            width: 95%;
+            overflow-x: scroll;
+            background: transparent;
+            z-index: 0
+        }
+
+        .comment-textarea {
+            resize: none;
+            width: 100%;
+        }
+
+        .textarea {
+            resize: none;
+            width: 100%;
+            overflow: auto;
+            border-width: 0.1ch;
+            border-style: ridge;
+        }
+
+        .label {
+            float: left;
+            word-break: break-word;
+            max-width: 100%;
+            font-weight: normal;
+        }
+
+        .name-input {
+            width: 100%;
+        }
+    </style>
+
+    <form action="{% url 'save_item' %}" method="post">
+        {% csrf_token %}
+        <table class="content-table">
+            <tr>
+                <th>
+                    <label><b>Name</b></label>
+                </th>
+                <th>
+                    {{ form.name }}
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <label><b>Description</b></label>
+                </th>
+                <th>
+                    {{ form.description }}
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <label><b>Source code</b></label>
+                </th>
+                <th>
+                    <textarea class="rownr" rows="20" cols="3" value="1" readonly></textarea>
+                    <span>
+                        {{ form.source_code }}
+                    </span>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <label><b>Documentation</b></label>
+                </th>
+                <th>
+                    {{ form.documentation }}
+                    
+                    <!-- hidden form entries -->
+                    {{ form.status }}
+                    {{ form.item_type }}
+                    {{ form.user }}
+                    {{ form.votes }}
+                </th>
+            </tr>
+        </table>
+        <input type="submit" value="Save">
+    </form>
+{% endblock content %}
