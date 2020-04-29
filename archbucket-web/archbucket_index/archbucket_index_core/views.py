@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.views.generic.base import View
+from django.views.generic import ListView
 from slugify import slugify
 
 from .forms import ItemForm, CommentForm, RatingForm
@@ -19,17 +20,25 @@ class IndexView(View):
         return render(request, 'index.html', {'item_types': item_types, 'releases': releases})
 
 
-class ItemsListView(View):
+class ItemsListView(ListView):
     '''List of items'''
+    paginate_by = 1
+    model = Item
+    template_name = 'item_list.html'
 
-    def get(self, request, type_url):
-        items_type = ItemType.objects.get(url=type_url)
-        if not request.user.is_anonymous:
-            items = Item.objects.filter(Q(item_type__name=items_type.name), Q(status='v') | Q(user=request.user))
+    def get_context_data(self, **kwargs):
+        context = super(ItemsListView, self).get_context_data(**kwargs)
+        context['items_type'] = ItemType.objects.get(url=self.kwargs['type_url'])
+
+        return context
+
+    def get_queryset(self):
+        items_type = ItemType.objects.get(url=self.kwargs['type_url'])
+        if not self.request.user.is_anonymous:
+            return Item.objects.filter(Q(item_type__name=items_type.name), Q(status='v') | Q(user=self.request.user))
         else:
-            items = Item.objects.filter(Q(item_type__name=items_type.name), Q(status='v'))
-
-        return render(request, 'item_list.html', {'items_type': items_type, 'items': items})
+            return Item.objects.filter(Q(item_type__name=items_type.name), Q(status='v'))
+    
 
 
 class ItemDetailView(View):
@@ -38,7 +47,12 @@ class ItemDetailView(View):
     def get(self, request, type_url, item_url):
         if item_url == 'add_item':
             status = 'v' if request.user.has_perm('can_save_directly') else 'n'
-            form = ItemForm(initial={'url': None, 'user': request.user, 'status': status, 'votes': 0, 'item_type': ItemType.objects.get(url=type_url)})
+            form = ItemForm(initial={
+                'url': None, 
+                'user': request.user, 
+                'status': status, 
+                'votes': 0, 
+                'item_type': ItemType.objects.get(url=type_url)})
             return render(request, 'modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'add'})
         
         item = Item.objects.get(url=item_url)
