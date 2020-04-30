@@ -1,9 +1,10 @@
 from django.urls import path, include
 from django.conf.urls import url
 
-from .views import ItemsListView, IndexView, ItemDetailView, ModifyItemView, SaveItemView, SaveCommentView, CommentView, SaveRatingView
+from .views import ItemsListView, IndexView, ItemDetailView, ModifyItemView, SaveItemView, SaveCommentView, CommentView, SaveRatingView, SearchView
 
 urlpatterns = [
+    url('^(?P<type_url>\w+)/search$', SearchView.as_view(), name='search'),
     url('save_item', SaveItemView.as_view(), name='save_item'),
     url('save_comment', SaveCommentView.as_view(), name='save_comment'),
     url('save_rating', SaveRatingView.as_view(), name='save_rating'),

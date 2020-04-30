@@ -1,56 +1,16 @@
 {% extends "base.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/style.css"> 
+{% endblock styles %}
+
 {% block title %}ArchBucket Index | {{ operation }}{% endblock title %}
+
 {% block content %}
+    <br/>
     {% if form.errors %}
         <p>...</p>
     {% endif %}   
-
-    <style>
-        .content-table {
-            text-align: left;
-            width: 100%;
-        }
-
-        .rownr {
-            overflow-y: hidden; 
-            background-color: darkgray; 
-            color: white; 
-            text-align: right; 
-            vertical-align:top; 
-            z-index: 0
-        }
-
-        .txt {
-            width: 95%;
-            overflow-x: scroll;
-            background: transparent;
-            z-index: 0
-        }
-
-        .comment-textarea {
-            resize: none;
-            width: 100%;
-        }
-
-        .textarea {
-            resize: none;
-            width: 100%;
-            overflow: auto;
-            border-width: 0.1ch;
-            border-style: ridge;
-        }
-
-        .label {
-            float: left;
-            word-break: break-word;
-            max-width: 100%;
-            font-weight: normal;
-        }
-
-        .name-input {
-            width: 100%;
-        }
-    </style>
 
     <form action="{% url 'save_item' %}" method="post">
         {% csrf_token %}
@@ -80,6 +40,9 @@
                     <span>
                         {{ form.source_code }}
                     </span>
+                    <script>
+                        input_changed(document.getElementById("text"));
+                    </script>
                 </th>
             </tr>
             <tr>
@@ -90,6 +53,7 @@
                     {{ form.documentation }}
                     
                     <!-- hidden form entries -->
+                    {{ form.url }}
                     {{ form.status }}
                     {{ form.item_type }}
                     {{ form.user }}

@@ -77,3 +77,4 @@ function count_lines(txt)
     
     return txt.split('\n').length + 1;
 }
+

@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 from .models import Item, Comment, Rating
 
@@ -13,6 +15,7 @@ class ItemForm(forms.ModelForm):
             'votes': forms.HiddenInput,
             'source_code': forms.Textarea(attrs={
                 'class': 'txt',
+                'id': 'text',
                 'rows': '20',
                 'cols': '150',
                 'nowrap': 'nowrap',
@@ -52,3 +55,10 @@ class RatingForm(forms.ModelForm):
             'item': forms.HiddenInput,
             'user': forms.HiddenInput
         }
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(max_length=255)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2', )

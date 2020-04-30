@@ -1,14 +1,44 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.views.generic.base import View
 from django.views.generic import ListView
 from slugify import slugify
 
-from .forms import ItemForm, CommentForm, RatingForm
+from .forms import ItemForm, CommentForm, RatingForm, SignUpForm
 from .models import Item, ItemType, Release, Comment, Rating
+from .tokens import account_activation_token
  
+class SignUpView(View):
+    def get(self, request):
+        form = SignUpForm()
+
+        return render(request, 'registration/register.html', {'form': form})
+
+    def post(self, request):
+        form = SignUpForm(request.POST)
+
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            current_site = get_current_site(request)
+            subject = 'Activate your account'
+            message = render_to_string('registration/activation_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': account_activation_token.make_token(user),
+            })
+            user.email_user(subject, message)
+
+            return redirect('account_activation_sent')
+
 
 class IndexView(View):
     '''Main page'''
@@ -22,13 +52,14 @@ class IndexView(View):
 
 class ItemsListView(ListView):
     '''List of items'''
-    paginate_by = 1
+    paginate_by = 10
     model = Item
     template_name = 'item_list.html'
 
     def get_context_data(self, **kwargs):
         context = super(ItemsListView, self).get_context_data(**kwargs)
         context['items_type'] = ItemType.objects.get(url=self.kwargs['type_url'])
+        context['search'] = False
 
         return context
 
@@ -38,7 +69,22 @@ class ItemsListView(ListView):
             return Item.objects.filter(Q(item_type__name=items_type.name), Q(status='v') | Q(user=self.request.user))
         else:
             return Item.objects.filter(Q(item_type__name=items_type.name), Q(status='v'))
-    
+
+class SearchView(ListView):
+    paginate_by = 10
+    model = Item
+    template_name = 'item_list.html'
+
+    def get_queryset(self):
+        return Item.objects.filter(name__icontains=self.request.GET.get('query'))
+
+    def get_context_data(self, **kwargs):
+        context = super(SearchView, self).get_context_data(**kwargs)
+        context['items_type'] = ItemType.objects.get(url=self.kwargs['type_url'])
+        context['search'] = True
+        context['query'] = self.request.GET.get('query')
+
+        return context
 
 
 class ItemDetailView(View):

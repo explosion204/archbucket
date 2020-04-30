@@ -1,19 +1,54 @@
 {% extends "base.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/style.css"> 
+{% endblock styles %}
+
 {% block title %}Archbucket Index | {{ items_type.name }}{% endblock title %}
+
 {% block content %}
     <div class="container padding-32" id="projects">
         <h3 class="border-bottom border-light-grey padding-16">{{ items_type.name }}</h3>
         <h4>{{ items_type.description }}</h4>
-        <h5>
-            <a href="/{{ items_type.url }}/add_item">New item</a>
-        </h5>
+        {% if not search %}
+            <h5>
+                <a href="/{{ items_type.url }}/add_item">New item</a>
+            </h5>
+        {% endif %}
     </div>
     <br/>
-    <table>
+
+    <form action="{% url 'search' type_url=items_type.url %}" method="get">
+        <table>
+            <tr>
+                <th>
+                    <input type="text" name="query">
+                </th>
+                <th>
+                    <input type="submit" value="Search">
+                </th>
+            </tr>
+        </table>
+    </form>
+
+    {% if search %}
+        <h4>Search results for "{{ query }}"</h4>
+    {% endif %}
+    <br/>
+    <table class="list-table">
+        <tr>
+            <th>    
+                <label><b>Name</b></label>
+            </th>
+            <th></th>
+        </tr>
         {% for item in item_list %}
             <tr>
                 <th>
-                    <a href="/{{ item.item_type.url }}/{{ item.url }}">{{ item.name }}</a>
+                    <label>{{ item.name }}</label>
+                </th>
+                <th>
+                    <a href="/{{ item.item_type.url }}/{{ item.url }}">View</a>
                 </th>
             </tr>
         {% endfor %} 
@@ -21,10 +56,18 @@
 
     <br/>
     {% if page_obj.has_previous %}
-        <a href="{{ items_type.url }}?page={{ page_obj.previous_page_number }}">Previous page</a>
+        {% if not search %}
+            <a href="{{ items_type.url }}?page={{ page_obj.previous_page_number }}">Previous page</a>
+        {% else %}
+            <a href="search?query={{ query }}&page={{ page_obj.previous_page_number }}">Previous page</a> 
+        {% endif %}
     {% endif %}
     <br/>
     {% if page_obj.has_next %}
-        <a href="{{ items_type.url }}?page={{ page_obj.next_page_number }}">Next page</a>
+        {% if not search %}
+            <a href="{{ items_type.url }}?page={{ page_obj.next_page_number }}">Next page</a>
+        {% else %}
+            <a href="search?query={{ query }}&page={{ page_obj.next_page_number }}">Next page</a>
+        {% endif %}
     {% endif %}
 {% endblock content %}

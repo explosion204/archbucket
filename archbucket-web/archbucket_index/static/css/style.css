@@ -1,3 +1,4 @@
+/* base.html styles*/
 html {
     box-sizing: border-box
 }
@@ -92,4 +93,57 @@ body {
 .padding-16 {
     padding-top: 16px!important;
     padding-bottom: 16px!important
+}
+
+/*numbering textarea styles*/
+
+.rownr {
+    overflow-y: hidden; 
+    background-color: darkgray; 
+    color: white; 
+    text-align: right; 
+    vertical-align:top; 
+    z-index: 0;
+    resize: none;
+}
+
+.txt {
+    width: 95%;
+    overflow-x: scroll;
+    background: transparent;
+    z-index: 0;
+    resize: none;
+}
+
+/* other structure elements styles */
+
+.content-table {
+    text-align: left;
+    width: 100%;
+}
+
+.list-table {
+    border-collapse: collapse;
+    border: 1px solid black;
+    width: 400px;
+}
+
+.comment-textarea {
+    resize: none;
+    width: 100%;
+}
+
+.textarea {
+    resize: none;
+    width: 100%;
+    overflow: auto;
+    border-width: 0.1ch;
+    border-style: ridge;
+}
+
+.label {
+    float: left;
+    word-break: break-word;
+    max-width: 100%;
+    font-weight: normal;
 }

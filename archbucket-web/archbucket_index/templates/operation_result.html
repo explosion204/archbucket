@@ -1,5 +1,12 @@
 {% extends "base.html" %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/style.css"> 
+{% endblock styles %}
+
 {% block title %}ArchBucket Index | {{ op_name }}: {{ status }}{% endblock title %}
+
 {% block content %}
+    <br/>
     <p>{{ message }}</p>
 {% endblock content %}
