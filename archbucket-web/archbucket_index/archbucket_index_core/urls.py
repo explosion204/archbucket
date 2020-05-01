@@ -9,7 +9,7 @@ urlpatterns = [
     url(r'^save_item$', SaveItemView.as_view(), name='save_item'),
     url(r'^save_comment$', SaveCommentView.as_view(), name='save_comment'),
     url(r'^save_rating$', SaveRatingView.as_view(), name='save_rating'),
-    url(r'^signup$', SignUpView.as_view(), name='signup'),
+    url(r'accounts/signup', SignUpView.as_view(), name='signup'),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         activate, name='activate'),
     url(r'^items/(?P<type_url>\w+)/new_item$', NewItemView.as_view()),
@@ -20,14 +20,6 @@ urlpatterns = [
     url(r'^comment/(?P<pk>\w+)/(?P<operation>\w+)$', ModifyCommentView.as_view()),
 
     path('accounts/', include('django.contrib.auth.urls')),
-
-
-
-    
-    # path('<slug:type_url>', ItemsListView.as_view()),
-    # path('<int:pk>/<str:operation>', CommentView.as_view()),
-    # path('<slug:type_url>/<slug:item_url>', ItemDetailView.as_view()),
-    # path('<slug:type_url>/<slug:item_url>/<str:operation>', ModifyItemView.as_view()),
 
     url(r'$', IndexView.as_view(), name='home'),
 ]

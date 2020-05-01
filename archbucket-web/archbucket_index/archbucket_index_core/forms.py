@@ -1,8 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 
-from .models import Item, Comment, Rating
+from .models import Item, Comment, Rating, User
 
 class ItemForm(forms.ModelForm):
     url = forms.CharField(widget=forms.HiddenInput,  required=False)

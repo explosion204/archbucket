@@ -1,6 +1,6 @@
+from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -13,7 +13,7 @@ from django.views.generic import ListView
 from slugify import slugify
 
 from .forms import ItemForm, CommentForm, RatingForm, SignUpForm
-from .models import Item, ItemType, Release, Comment, Rating
+from .models import Item, ItemType, Release, Comment, Rating, User
 from .tokens import account_activation_token
  
 class SignUpView(View):
@@ -40,6 +40,8 @@ class SignUpView(View):
             user.email_user(subject, message)
 
             return redirect('activation_email_sent')
+        
+        return render(request, 'registration/register.html', {'form': form})
 
 def activation_email_sent(request):
     return render(request, 'registration/activation_email_sent.html')

@@ -3,11 +3,14 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from datetime import datetime
+
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
 
 class ItemType(models.Model):
     name = models.CharField(verbose_name='Name', max_length=20)
@@ -26,8 +29,8 @@ class Item(models.Model):
     status = models.CharField(max_length=1, choices=[('v', 'Verified'), ('n', 'Not verified')], default='n')
     url = models.SlugField(max_length=150, unique=True, default=None)
 
-    created = models.DateTimeField(verbose_name='Created', auto_now_add=True)
-    modified = models.DateTimeField(verbose_name='Modified', auto_now_add=True)
+    created = models.DateTimeField(verbose_name='Created', default=datetime.now())
+    modified = models.DateTimeField(verbose_name='Modified', default=datetime.now())
 
     class Meta:
         permissions = [
@@ -43,7 +46,7 @@ class Comment(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField(verbose_name='Text', max_length=250)
-    datetime = models.DateTimeField(verbose_name='Datetime', auto_now_add=True)
+    datetime = models.DateTimeField(verbose_name='Datetime', default=datetime.now())
 
 class Rating(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
