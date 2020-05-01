@@ -1,11 +1,13 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic.base import View
 from django.views.generic import ListView
 from slugify import slugify
@@ -37,8 +39,25 @@ class SignUpView(View):
             })
             user.email_user(subject, message)
 
-            return redirect('account_activation_sent')
+            return redirect('activation_email_sent')
 
+def activation_email_sent(request):
+    return render(request, 'registration/activation_email_sent.html')
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.profile.verified = True
+        user.save()
+        return redirect('index')
+    else:
+        return render(request, 'account_activation_invalid.html')
 
 class IndexView(View):
     '''Main page'''
@@ -47,7 +66,7 @@ class IndexView(View):
         # five latest records
         releases = Release.objects.all().order_by('-id')[0:5]
 
-        return render(request, 'index.html', {'item_types': item_types, 'releases': releases})
+        return render(request, 'index.html', {'types': item_types, 'releases': releases})
 
 
 class ItemsListView(ListView):
@@ -70,6 +89,7 @@ class ItemsListView(ListView):
         else:
             return Item.objects.filter(Q(item_type__name=items_type.name), Q(status='v'))
 
+
 class SearchView(ListView):
     paginate_by = 10
     model = Item
@@ -86,21 +106,10 @@ class SearchView(ListView):
 
         return context
 
-
 class ItemDetailView(View):
     '''Page with details of concrete item'''
 
     def get(self, request, type_url, item_url):
-        if item_url == 'add_item':
-            status = 'v' if request.user.has_perm('can_save_directly') else 'n'
-            form = ItemForm(initial={
-                'url': None, 
-                'user': request.user, 
-                'status': status, 
-                'votes': 0, 
-                'item_type': ItemType.objects.get(url=type_url)})
-            return render(request, 'modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'add'})
-        
         item = Item.objects.get(url=item_url)
         comments = Comment.objects.filter(item__url=item_url)
 
@@ -149,6 +158,21 @@ class ItemDetailView(View):
             'comments': comments, 
             'item_rating': item.item_rating,
             })
+
+
+class NewItemView(View):
+    '''Create new item instance'''
+
+    def get(self, request, type_url):
+        status = 'v' if request.user.has_perm('can_save_directly') else 'n'
+        form = ItemForm(initial={
+            'url': None, 
+            'user': request.user, 
+            'status': status, 
+            'votes': 0, 
+            'item_type': ItemType.objects.get(url=type_url)})
+
+        return render(request, 'modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'add'})
 
 
 class ModifyItemView(LoginRequiredMixin, View):
@@ -247,7 +271,7 @@ class SaveCommentView(LoginRequiredMixin, View):
                 })
 
 
-class CommentView(LoginRequiredMixin, View):
+class ModifyCommentView(LoginRequiredMixin, View):
     '''Remove Comment instance'''
     login_url = 'accounts/login'
 

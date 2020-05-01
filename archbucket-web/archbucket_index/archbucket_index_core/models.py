@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+from datetime import datetime
+
 class ItemType(models.Model):
     name = models.CharField(verbose_name='Name', max_length=20)
     description = models.TextField(verbose_name='Description', default='desc')
@@ -24,10 +26,17 @@ class Item(models.Model):
     status = models.CharField(max_length=1, choices=[('v', 'Verified'), ('n', 'Not verified')], default='n')
     url = models.SlugField(max_length=150, unique=True, default=None)
 
+    created = models.DateTimeField(verbose_name='Created', auto_now_add=True)
+    modified = models.DateTimeField(verbose_name='Modified', auto_now_add=True)
+
     class Meta:
         permissions = [
             ('can_save_directly', 'Can save or modify directly.')
         ]
+
+    def save(self, *args, **kwargs):
+        self.modified = datetime.now()
+        super(Item, self).save(*args, **kwargs)
 
 
 class Comment(models.Model):

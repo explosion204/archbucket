@@ -6,6 +6,10 @@
 
 {% block title %}ArchBucket Index | {{ item.items_type.name }} '{{ item.name }}'{% endblock title %}
 
+{% block scripts %}
+    <script src="/static/js/numbering_textarea.js"></script>
+{% endblock scripts %}
+
 {% block content %}
     <br/>
     <table class="content-table">
@@ -101,10 +105,10 @@
             </th>
             <th>
                 {% if can_edit %}
-                    <a href="/{{ item.item_type.url }}/{{ item.url }}/edit">Edit</a>
+                    <a href="{{ item.url }}/edit">Edit</a>
                 {% endif %}
                 {% if can_remove %}
-                    <a style="padding-left: 1%;" href="/{{ item.item_type.url }}/{{ item.url }}/remove">Remove</a>
+                    <a style="padding-left: 1%;" href="{{ item.url }}/remove">Remove</a>
                 {% endif %}
             </th>
         </tr>
@@ -139,14 +143,16 @@
             </tr>
             <tr>
                 <th>
-                    <textarea class="textarea" readonly >{{ comment.text }}</textarea>
+                    <fieldset>
+                        <label class="label">{{ comment.text }}</label> 
+                    </fieldset>
                 </th>
             </tr>
             {% if user == comment.user or user.is_staff %}
                 <tr>
                     <th>
                         <label><b>Action:</b></label>
-                        <a href="/{{ comment.id }}/remove">Remove</a>
+                        <a href="/comment/{{ comment.id }}/remove">Remove</a>
                     </th>
                 </tr>
             {% endif %}

@@ -8,8 +8,8 @@
         <h3 class="border-bottom border-light-grey padding-16">Browse</h3>
     </div>
 
-    {% for item_type in item_types %}
-        <a href="/{{ item_type.url }}">{{ item_type.name }}</a>
+    {% for type in types %}
+        <a href="items/{{ type.url }}">{{ type.name }}</a>
         <br/>
     {% endfor %}
 

@@ -5,9 +5,10 @@
         <title>{% block title %}{% endblock title %}</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        {% block styles %}{% endblock styles %}
-        {% block scripts %}{% endblock scripts %}
-        <script src="{% static 'js/numbering_textarea.js' %}"></script>
+        {% block styles %}
+        {% endblock styles %}
+        {% block scripts %}
+        {% endblock scripts %}
     </head>
 
     <body>
@@ -22,19 +23,18 @@
                     <a class="bar-item button" href="/accounts/logout/">Logout</a>
                 {% else %}
                     <a class="bar-item button" href="/accounts/login/">Sign in</a>
-                    <a class="bar-item button">Sign up</a>
+                    <a class="bar-item button" href="/accounts/signup/">Sign up</a>
                 {% endif %}
             </div>
         </div>
         </div>
 
-        
+
         <!-- Page content -->
         <div class="content padding" style="max-width:1564px">
         <br/>
         <br/>
         {% block content %}
-
         {% endblock content %}
     </body>
 </html>

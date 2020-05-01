@@ -125,11 +125,6 @@ body {
 .list-table {
     border-collapse: collapse;
     border: 1px solid black;
-    width: 400px;
-}
-
-.comment-textarea {
-    resize: none;
     width: 100%;
 }
 

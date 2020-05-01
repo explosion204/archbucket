@@ -12,7 +12,7 @@
         <h4>{{ items_type.description }}</h4>
         {% if not search %}
             <h5>
-                <a href="/{{ items_type.url }}/add_item">New item</a>
+                <a href="{{ items_type.url }}/new_item">New item</a>
             </h5>
         {% endif %}
     </div>
@@ -40,6 +40,15 @@
             <th>    
                 <label><b>Name</b></label>
             </th>
+            <th>
+                <label><b>Created</b></label>
+            </th>
+            <th>
+                <label><b>Modified</b></label>
+            </th>
+            <th>
+                <label><b>Publisher</b></label>
+            </th>
             <th></th>
         </tr>
         {% for item in item_list %}
@@ -48,7 +57,16 @@
                     <label>{{ item.name }}</label>
                 </th>
                 <th>
-                    <a href="/{{ item.item_type.url }}/{{ item.url }}">View</a>
+                    <label>{{ item.created }}</label>
+                </th>
+                <th>
+                    <label>{{ item.modified }}</label>
+                </th>
+                <th>
+                    <label>{{ item.user.get_username }}</label>
+                </th>
+                <th>
+                    <a href="/items/{{ items_type.url }}/{{ item.url }}">View</a>
                 </th>
             </tr>
         {% endfor %} 
