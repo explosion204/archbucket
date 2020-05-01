@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 AUTH_USER_MODEL = 'archbucket_index_core.User'
+LOGIN_REDIRECT_URL = '/accounts/profile'
 
 INSTALLED_APPS = [
     'django.contrib.admin',

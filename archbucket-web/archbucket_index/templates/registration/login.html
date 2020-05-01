@@ -7,7 +7,7 @@
     <br/>
     <br/>
     {% if form.errors %}
-        <p>Your username and password didn't match. Please try again.</p>
+        <label style="color: red;">Username and password didn't match. Please try again.</label>
     {% endif %}
 
     {% if next %}
@@ -22,23 +22,33 @@
     {% if user.is_authenticated %}
         <p>You are already signed in.</p>
     {% else %}
-        <form method="post" action="{% url 'login' %}">
+        <!-- <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
             <table>
-            <tr>
-                <td>{{ form.username.label_tag }}</td>
-                <td>{{ form.username }}</td>
-            </tr>
-
-            <tr>
-                <td>{{ form.password.label_tag }}</td>
-                <td>{{ form.password }}</td>
-            </tr>
+                <tr>
+                    <td>{{ form.username.label_tag }}</td>
+                    <td>{{ form.username }}</td>
+                </tr>
+                <tr>
+                    <td>{{ form.password.label_tag }}</td>
+                    <td>{{ form.password }}</td>
+                </tr>
             </table>
 
             <input type="submit" value="login" />
             <input type="hidden" name="next" value="{{ next }}" />
-        </form>
+        </form> -->
+
+        <form action="{% url 'login' %}" method="post">
+            {% csrf_token %}
+            {% for field in form %}
+              <p>
+                {{ field.label_tag }}<br>
+                {{ field }}
+              </p>
+            {% endfor %}
+            <button type="submit">Sign in</button>
+          </form>
 
         {# Assumes you setup the password_reset view in your URLconf #}
         <p><a href="{% url 'password_reset' %}">Lost password?</a></p>

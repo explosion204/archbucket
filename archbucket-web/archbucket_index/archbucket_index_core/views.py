@@ -1,6 +1,7 @@
 from django import forms
-from django.contrib.auth import authenticate
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.password_validation import validate_password, ValidationError
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -11,9 +12,8 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic.base import View
 from django.views.generic import ListView
 from slugify import slugify
-
-from .forms import ItemForm, CommentForm, RatingForm, SignUpForm
-from .models import Item, ItemType, Release, Comment, Rating, User
+from .forms import ItemForm, CommentForm, RatingForm, SignUpForm, SetPasswordForm
+from .models import Item, ItemType, Release, Comment, Rating, User, Profile
 from .tokens import account_activation_token
  
 class SignUpView(View):
@@ -27,7 +27,7 @@ class SignUpView(View):
 
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False
+            user.is_active = True
             user.save()
             current_site = get_current_site(request)
             subject = 'Activate your account'
@@ -54,12 +54,42 @@ def activate(request, uidb64, token):
         user = None
 
     if user is not None and account_activation_token.check_token(user, token):
-        user.is_active = True
         user.profile.verified = True
         user.save()
         return redirect('index')
     else:
-        return render(request, 'account_activation_invalid.html')
+        return render(request, 'registration/account_activation_invalid.html')
+
+class ProfileView(LoginRequiredMixin, View):
+    """User's profile"""
+    login_url = '/accounts/login'
+
+    def get(self, request):
+        profile = Profile.objects.get(user=request.user)
+        form = SetPasswordForm(initial={'user': request.user})
+
+        return render(request, 'profile.html', {'form': form, 'profile': profile})
+
+    def post(self, request):
+        form = SetPasswordForm(request.POST)
+        profile = Profile.objects.get(user=request.user)
+
+        if form.is_valid():
+            try:
+                validate_password(form.cleaned_data['new_password1'])
+            except ValidationError as e:
+                form.add_error('new_password1', e)
+                return render(request, 'profile.html', {'form': form, 'profile': profile})
+
+            user = request.user
+            user.set_password(form.cleaned_data['new_password1'])
+            user.save()
+            update_session_auth_hash(request, user)
+
+            return render(request, 'profile.html', {'form': form, 'profile': profile, 'message': 'Password successfully changed.'})
+            
+        return render(request, 'profile.html', {'form': form, 'profile': profile})
+
 
 class IndexView(View):
     '''Main page'''
@@ -162,8 +192,9 @@ class ItemDetailView(View):
             })
 
 
-class NewItemView(View):
+class NewItemView(LoginRequiredMixin, View):
     '''Create new item instance'''
+    login_url = '/accounts/login'
 
     def get(self, request, type_url):
         status = 'v' if request.user.has_perm('can_save_directly') else 'n'
@@ -179,7 +210,7 @@ class NewItemView(View):
 
 class ModifyItemView(LoginRequiredMixin, View):
     '''Page which provides functionality of editing/removing'''
-    login_url = 'accounts/login'
+    login_url = '/accounts/login'
 
     def get(self, request, type_url, item_url, operation):
         item = Item.objects.get(url=item_url)
@@ -203,11 +234,11 @@ class ModifyItemView(LoginRequiredMixin, View):
                 })
                 return render(request, 'modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'edit'})
             
-            return redirect('')
+            return redirect('index')
 
 class SaveItemView(LoginRequiredMixin, View):
     '''Save edited or created Item instance'''
-    login_url = 'accounts/login'
+    login_url = '/accounts/login'
 
     def post(self, request):
         form = ItemForm(request.POST)
@@ -254,7 +285,7 @@ class SaveItemView(LoginRequiredMixin, View):
 
 class SaveCommentView(LoginRequiredMixin, View):
     '''Save created Comment instance'''
-    login_url = 'accounts/login'
+    login_url = '/accounts/login'
 
     def post(self, request):
         form = CommentForm(request.POST)
@@ -275,7 +306,7 @@ class SaveCommentView(LoginRequiredMixin, View):
 
 class ModifyCommentView(LoginRequiredMixin, View):
     '''Remove Comment instance'''
-    login_url = 'accounts/login'
+    login_url = '/accounts/login'
 
     def get(self, request, pk, operation):
         comment = Comment.objects.get(id=pk)
@@ -294,12 +325,12 @@ class ModifyCommentView(LoginRequiredMixin, View):
                 # to implement in future
                 pass
 
-        return redirect('')
+        return redirect('index')
 
 
 class SaveRatingView(LoginRequiredMixin, View):
     '''Save Rating instance'''
-    login_url = 'accounts/login'
+    login_url = '/accounts/login'
 
     def post(self, request):
         form = RatingForm(request.POST)
@@ -317,4 +348,4 @@ class SaveRatingView(LoginRequiredMixin, View):
                 'message': 'Rating successfully saved.'
                 })
 
-        return redirect('')
+        return redirect('index')

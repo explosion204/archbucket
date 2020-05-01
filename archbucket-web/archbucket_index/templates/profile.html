@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/style.css"> 
+{% endblock styles %}
+{% block title %}ArchBucket Index{% endblock title %}
+{% block content %}
+    <div class="container padding-32">
+        <h3 class="border-bottom border-light-grey padding-16">Hello, {{ user.get_username }}</h3>
+    </div>
+
+    <label><b>Email:</b></label>
+    <label>{{ user.email }}</label> 
+    {% if profile.verified %}
+        <label style="color: green;"> (verified)</label>
+    {% else %}
+        <label style="color: red;"> (not verified)</label>
+    {% endif %}
+
+    <h4>Change password</h4>
+
+    <label style="color: green;">{{ message }}</label>
+
+    <form action="{% url 'profile' %}" method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <p>
+            {{ field }}
+            {% for error in field.errors %}
+              <p style="color: red">{{ error }}</p>
+            {% endfor %}
+          </p>
+        {% endfor %}
+        <button type="submit">Change</button>
+      </form>
+
+{% endblock content %}
