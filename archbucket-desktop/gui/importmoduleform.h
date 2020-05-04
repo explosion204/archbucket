@@ -20,10 +20,13 @@ public:
     explicit ImportModuleForm(Updater *updater, QWidget *parent = nullptr);
     ~ImportModuleForm();
 
+signals:
+    void importing_ended(bool result, QString message);
+
 private slots:
     void on_openButton_clicked();
-
     void on_importButton_clicked();
+    void on_importing_ended(bool result, QString message);
 
 private:
     Ui::ImportModuleForm *ui;

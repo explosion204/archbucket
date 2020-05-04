@@ -45,18 +45,35 @@ void ImportApiForm::on_importButton_clicked()
         QByteArray source_code = file->readAll();
         file->close();
 
-        auto response = updater->importApiModule(ui->nameEdit->text(), ui->classNameEdit->text(), QString::fromLocal8Bit(source_code));
-        close();
+        loading_movie->start();
+        ui->importButton->setEnabled(false);
 
-        if (!response.first)
-        {
-            QMessageBox::warning(parent, "Error", response.second);
-        }
-        else
-        {
-            QMessageBox::information(parent, "Info", response.second);
-        }
+        connect(this, &ImportApiForm::importing_ended, this, &ImportApiForm::on_importing_ended);
 
-        delete this;
+        std::thread([this, source_code] ()
+        {
+            auto response = updater->importApiModule(ui->nameEdit->text(), ui->classNameEdit->text(), QString::fromLocal8Bit(source_code));
+            importing_ended(response.first, response.second);
+            loading_movie->stop();
+        }).detach();
     }
+}
+
+void ImportApiForm::setButtonIcon()
+{
+    ui->importButton->setIcon(QIcon(loading_movie->currentPixmap()));
+}
+
+void ImportApiForm::on_importing_ended(bool result, QString message)
+{
+    if (result)
+    {
+        QMessageBox::information(parent, "Info", message);
+    }
+    else
+    {
+        QMessageBox::warning(parent, "Error", message);
+    }
+
+    close();
 }

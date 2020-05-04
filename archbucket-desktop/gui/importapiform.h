@@ -20,10 +20,13 @@ public:
     explicit ImportApiForm(Updater *updater, QWidget *parent = nullptr);
     ~ImportApiForm();
 
+signals:
+    void importing_ended(bool result, QString message);
+
 private slots:
     void on_openButton_clicked();
-
     void on_importButton_clicked();
+    void on_importing_ended(bool result, QString message);
 
 private:
     Ui::ImportApiForm *ui;
@@ -31,6 +34,8 @@ private:
     Updater *updater;
     QFile *file;
     QMovie *loading_movie;
+
+    void setButtonIcon();
 };
 
 #endif // IMPORTAPIFORM_H

@@ -48,24 +48,35 @@ void ImportModuleForm::on_importButton_clicked()
         QByteArray source_code = file->readAll();
         file->close();
 
+        loading_movie->start();
+        ui->importButton->setEnabled(false);
 
-        auto response = updater->importModule(ui->nameEdit->text(), QString::fromLocal8Bit(source_code));
-        close();
+        connect(this, &ImportModuleForm::importing_ended, this, &ImportModuleForm::on_importing_ended);
 
-        if (!response.first)
+        std::thread([this, source_code] ()
         {
-            QMessageBox::warning(parent, "Error", response.second);
-        }
-        else
-        {
-            QMessageBox::information(parent, "Info", response.second);
-        }
-
-        delete this;
+            auto response = updater->importModule(ui->nameEdit->text(), QString::fromLocal8Bit(source_code));
+            importing_ended(response.first, response.second);
+            loading_movie->stop();
+        }).detach();
     }
 }
 
 void ImportModuleForm::setButtonIcon()
 {
     ui->importButton->setIcon(QIcon(loading_movie->currentPixmap()));
+}
+
+void ImportModuleForm::on_importing_ended(bool result, QString message)
+{
+    if (result)
+    {
+        QMessageBox::information(parent, "Info", message);
+    }
+    else
+    {
+        QMessageBox::warning(parent, "Error", message);
+    }
+
+    close();
 }
