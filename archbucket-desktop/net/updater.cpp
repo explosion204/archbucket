@@ -66,7 +66,7 @@ QString Updater::getServerStatus()
 {
     if (is_connected)
     {
-        QString response = server->getResponse("server status");
+        QString response = server->getResponse("server status").toUtf8();
         if (response.isEmpty())
         {
             connection_broken();

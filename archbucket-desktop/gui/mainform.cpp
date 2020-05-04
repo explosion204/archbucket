@@ -191,12 +191,16 @@ void MainForm::on_restartBotButton_clicked()
 
 void MainForm::on_importApiButton_clicked()
 {
-    (new ImportApiForm(updater, this))->show();
+    ImportApiForm *form = new ImportApiForm(updater, this);
+    form->setModal(true);
+    form->show();
 }
 
 void MainForm::on_importModuleButton_clicked()
 {
-    (new ImportModuleForm(updater, this))->show();
+    ImportModuleForm *form = new ImportModuleForm(updater, this);
+    form->setModal(true);
+    form->show();
 }
 
 void MainForm::on_removeApiButton_clicked()

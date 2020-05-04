@@ -2,13 +2,18 @@
 #include "ui_importmoduleform.h"
 
 ImportModuleForm::ImportModuleForm(Updater *updater, QWidget *parent) :
-    QWidget(parent),
+    QDialog(parent),
     ui(new Ui::ImportModuleForm)
 {
     ui->setupUi(this);
     this->updater = updater;
     this->parent = parent;
     loading_movie = new QMovie(":/gifs/assets/loading.gif");
+
+    connect(loading_movie, &QMovie::frameChanged, this, &ImportModuleForm::setButtonIcon);
+    if (loading_movie->loopCount() != -1)
+        connect(loading_movie, &QMovie::finished, loading_movie, &QMovie::start);
+
 }
 
 ImportModuleForm::~ImportModuleForm()
@@ -25,12 +30,15 @@ ImportModuleForm::~ImportModuleForm()
 void ImportModuleForm::on_openButton_clicked()
 {
     QString file_path = QFileDialog::getOpenFileName(this, tr("Open file with Python source code"), "");
-    ui->pathEdit->setText(file_path);
 
-    file = new QFile(file_path);
-    file->open(QIODevice::Text);
+    if (!file_path.isEmpty())
+    {
+        ui->pathEdit->setText(file_path);
+        file = new QFile(file_path);
+        file->open(QIODevice::Text);
 
-    ui->importButton->setEnabled(true);
+        ui->importButton->setEnabled(true);
+    }
 }
 
 void ImportModuleForm::on_importButton_clicked()
@@ -39,6 +47,7 @@ void ImportModuleForm::on_importButton_clicked()
     {
         QByteArray source_code = file->readAll();
         file->close();
+
 
         auto response = updater->importModule(ui->nameEdit->text(), QString::fromLocal8Bit(source_code));
         close();
@@ -54,4 +63,9 @@ void ImportModuleForm::on_importButton_clicked()
 
         delete this;
     }
+}
+
+void ImportModuleForm::setButtonIcon()
+{
+    ui->importButton->setIcon(QIcon(loading_movie->currentPixmap()));
 }

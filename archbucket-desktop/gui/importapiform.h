@@ -1,7 +1,7 @@
 #ifndef IMPORTAPIFORM_H
 #define IMPORTAPIFORM_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMovie>
@@ -12,7 +12,7 @@ namespace Ui {
 class ImportApiForm;
 }
 
-class ImportApiForm : public QWidget
+class ImportApiForm : public QDialog
 {
     Q_OBJECT
 

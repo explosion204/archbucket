@@ -2,7 +2,7 @@
 #include "ui_importapiform.h"
 
 ImportApiForm::ImportApiForm(Updater *updater, QWidget *parent) :
-    QWidget(parent),
+    QDialog(parent),
     ui(new Ui::ImportApiForm)
 {
     ui->setupUi(this);
@@ -25,12 +25,16 @@ ImportApiForm::~ImportApiForm()
 void ImportApiForm::on_openButton_clicked()
 {
     QString file_path = QFileDialog::getOpenFileName(this, tr("Open file with Python source code"), "");
-    ui->pathEdit->setText(file_path);
 
-    file = new QFile(file_path);
-    file->open(QIODevice::Text);
 
-    ui->importButton->setEnabled(true);
+    if (!file_path.isEmpty())
+    {
+        ui->pathEdit->setText(file_path);
+        file = new QFile(file_path);
+        file->open(QIODevice::Text);
+
+        ui->importButton->setEnabled(true);
+    }
 }
 
 

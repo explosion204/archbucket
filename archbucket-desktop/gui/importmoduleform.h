@@ -1,7 +1,7 @@
 #ifndef IMPORTMODULEFORM_H
 #define IMPORTMODULEFORM_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMovie>
@@ -12,7 +12,7 @@ namespace Ui {
 class ImportModuleForm;
 }
 
-class ImportModuleForm : public QWidget
+class ImportModuleForm : public QDialog
 {
     Q_OBJECT
 
@@ -31,6 +31,8 @@ private:
     QWidget *parent;
     QFile *file;
     QMovie *loading_movie;
+
+    void setButtonIcon();
 };
 
 #endif // IMPORTMODULEFORM_H
