@@ -21,9 +21,14 @@ class RequestRouter:
 
         importlib.import_module = error_handler.func_error_handler(importlib.import_module)
         self.modules = {name: importlib.import_module(f'.{name}', 'archbucket.core.modules') for name in names.keys() if names[name] == 'enabled'}
-        for module in self.modules.values():
+        
+        for name, module in self.modules.items():
             module = importlib.reload(module)
-            module.run = error_handler.func_error_handler(module.run)
+            try:
+                module.run = error_handler.func_error_handler(module.run)
+            except AttributeError:
+                error_handler.logger.error(f'AttrubuteError occured. Module {module.__name__} has no attribute run. It have not been included to current bot instance.')
+                raise Exception
 
     def route(self, request: Request):
         command = request.command
