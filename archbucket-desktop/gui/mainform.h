@@ -42,8 +42,8 @@ private slots:
     void on_importModuleButton_clicked();
     void on_removeApiButton_clicked();
     void on_removeModuleButton_clicked();
-
     void on_item_removed(QListWidget *list_widget, int item_row);
+    void on_refreshLogsButton_clicked();
 
 private:
     Ui::MainForm *ui;

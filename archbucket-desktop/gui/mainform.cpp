@@ -11,6 +11,7 @@ MainForm::MainForm(Updater *updater, QWidget *parent) :
     connect(updater, &Updater::data_updated, this, &MainForm::updateStatus);
     updateStatus();
     updateListWidgets();
+    on_refreshLogsButton_clicked();
 
     // loading animation
     loading_movie = new QMovie(":/gifs/assets/loading.gif");
@@ -39,7 +40,6 @@ void MainForm::updateStatus()
     ui->portLabel->setText(QString::number(updater->getPort()));
     ui->botStatusLabel->setText(updater->data.bot_status);
     ui->pipelinesLabel->setText(updater->data.pipelines_count);
-
 }
 
 void MainForm::updateListWidgets()
@@ -343,4 +343,9 @@ void MainForm::setControlsState(bool state)
         loading_button->setEnabled(true);
     else
         loading_button->setEnabled(false);
+}
+
+void MainForm::on_refreshLogsButton_clicked()
+{
+    ui->logsTextBrowser->setText(updater->data.logs);
 }
