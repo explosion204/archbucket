@@ -1,21 +1,26 @@
 from django import forms
+from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.password_validation import validate_password, ValidationError
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic.base import View
-from django.views.generic import ListView
+from django.views.generic import ListView, FormView
 from slugify import slugify
-from .forms import ItemForm, CommentForm, RatingForm, SignUpForm, SetPasswordForm
+
+from .accounts import email
+from .accounts.tokens import account_activation_token
+from .forms import ItemForm, CommentForm, RatingForm, SignUpForm, SetPasswordForm, SendEmailForm
 from .models import Item, ItemType, Release, Comment, Rating, User, Profile
-from .tokens import account_activation_token
- 
+
+
 class SignUpView(View):
     def get(self, request):
         form = SignUpForm()
@@ -37,7 +42,7 @@ class SignUpView(View):
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
             })
-            user.email_user(subject, message)
+            email.send_email(user.email, subject, message)
 
             return redirect('activation_email_sent')
         
@@ -347,5 +352,26 @@ class SaveRatingView(LoginRequiredMixin, View):
                 'status': 'success',
                 'message': 'Rating successfully saved.'
                 })
+
+        return redirect('index')
+
+class SendEmailView(UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def post(self, request):
+        form = SendEmailForm(request.POST)
+
+        if form.is_valid():
+            users = form.cleaned_data['users']
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+
+            for user in users:
+                email.send_email(user.email, subject, message)
+
+            messages.info(request, 'Emails successfully sent.')
+            
+            return redirect('/admin/archbucket_index_core/user/')
 
         return redirect('index')

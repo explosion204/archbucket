@@ -2,7 +2,7 @@ from django.urls import path, include
 from django.conf.urls import url
 
 from .views import ItemsListView, IndexView, NewItemView, ItemDetailView, ModifyItemView, SaveItemView, SaveCommentView, ModifyCommentView, SaveRatingView, SearchView
-from .views import activation_email_sent, activate, SignUpView, ProfileView
+from .views import activation_email_sent, activate, SignUpView, ProfileView, SendEmailView
 
 urlpatterns = [
     url(r'^account_activation_sent$', activation_email_sent, name='activation_email_sent'),
@@ -20,5 +20,6 @@ urlpatterns = [
     url(r'^items/(?P<type_url>\w+)/(?P<item_url>\w+)$', ItemDetailView.as_view()),
     url(r'^items/(?P<type_url>\w+)/(?P<item_url>\w+)/(?P<operation>\w+)$', ModifyItemView.as_view()),
     url(r'^comment/(?P<pk>\w+)/(?P<operation>\w+)$', ModifyCommentView.as_view()),
-    url(r'^$', IndexView.as_view(), name='index')
+    url(r'^send_email$', SendEmailView.as_view(), name='email'),
+    url(r'^$', IndexView.as_view(), name='index'),
 ]

@@ -82,11 +82,11 @@ WSGI_APPLICATION = 'archbucket_index.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '...',
-        'USER': '...',
-        'PASSWORD': '...',
-        'HOST': '...',
-        'PORT': '...'
+            'NAME': 'd8ss0f0s85qqhu',
+            'USER': 'eqxikrxfthecla',
+            'PASSWORD': 'd1f8121414fa3bdf633c79d4d86a7ef6015079de839a766724ab528ab2cc6fae',
+            'HOST': 'ec2-54-195-247-108.eu-west-1.compute.amazonaws.com',
+            'PORT': '5432'
     }
 }
 
@@ -133,5 +133,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = '...'
+EMAIL_PORT = 0
+EMAIL_HOST_USER = '...'
+EMAIL_HOST_PASSWORD = '...'
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True
