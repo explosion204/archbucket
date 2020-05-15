@@ -70,7 +70,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
-    },
+    }
 ]
 
 WSGI_APPLICATION = 'archbucket_index.wsgi.application'
@@ -80,14 +80,20 @@ WSGI_APPLICATION = 'archbucket_index.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
+    # MAIN DB
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'd8ss0f0s85qqhu',
-            'USER': 'eqxikrxfthecla',
-            'PASSWORD': 'd1f8121414fa3bdf633c79d4d86a7ef6015079de839a766724ab528ab2cc6fae',
-            'HOST': 'ec2-54-195-247-108.eu-west-1.compute.amazonaws.com',
-            'PORT': '5432'
+        'NAME': '...',
+        'USER': '...',
+        'PASSWORD': '...',
+        'HOST': '...',
+        'PORT': '...'
     }
+    # TEST DB
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': 'test'
+    # }
 }
 
 
@@ -108,6 +114,58 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+LOG_PATH = os.path.join(BASE_DIR, "logs/")
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s - %(levelname)s - %(message)s'}
+    },
+    
+    'handlers': {
+        'errors': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_PATH + 'errors.log',
+            'formatter': 'standard'
+        },
+        'requests': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_PATH + 'requests.log',
+            'formatter': 'standard'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
+        }
+    },
+
+    'loggers': {
+        # REQUESTS
+        'django': {
+            'handlers': ['requests', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        # ERRORS
+        'django.request': {
+            'handlers': ['errors', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        # ORM ERRORS
+        'django.db.backends': {
+            'handlers': ['errors', 'console'],
+            'level': 'ERROR',
+            'propagate': True,
+        }
+    },
+}
 
 
 # Internationalization
@@ -134,9 +192,9 @@ STATICFILES_DIRS = [
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = '...'
-EMAIL_PORT = 0
-EMAIL_HOST_USER = '...'
-EMAIL_HOST_PASSWORD = '...'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'archbucket.index@gmail.com'
+EMAIL_HOST_PASSWORD = 'DiMa75097110'
 EMAIL_USE_SSL = False
 EMAIL_USE_TLS = True
