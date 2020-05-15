@@ -1,0 +1,7 @@
+[run]
+source = 
+    archbucket_index_core/
+omit =
+    archbucket_index/
+    archbucket_index_core/migrations/
+    archbucket_index_core/apps.*
