@@ -1,18 +1,22 @@
+import datetime
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.password_validation import validate_password, ValidationError
 from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.template.response import TemplateResponse
+from django.urls import reverse_lazy, reverse
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.generic.base import View
 from django.views.generic import ListView, FormView
+from jinja2 import Environment, FileSystemLoader
 from slugify import slugify
 
 from .accounts import email
@@ -20,81 +24,9 @@ from .accounts.tokens import account_activation_token
 from .forms import ItemForm, CommentForm, RatingForm, SignUpForm, SetPasswordForm, SendEmailForm
 from .models import Item, ItemType, Release, Comment, Rating, User, Profile
 
+from archbucket_index.settings import TEMPLATES_DIR
 
-class SignUpView(View):
-    def get(self, request):
-        form = SignUpForm()
-
-        return render(request, 'registration/register.html', {'form': form})
-
-    def post(self, request):
-        form = SignUpForm(request.POST)
-
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = True
-            user.save()
-            current_site = get_current_site(request)
-            subject = 'Activate your account'
-            message = render_to_string('registration/activation_email.html', {
-                'user': user,
-                'domain': current_site.domain,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': account_activation_token.make_token(user),
-            })
-            email.send_email(user.email, subject, message)
-
-            return redirect('activation_email_sent')
-        
-        return render(request, 'registration/register.html', {'form': form})
-
-def activation_email_sent(request):
-    return render(request, 'registration/activation_email_sent.html')
-
-def activate(request, uidb64, token):
-    try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user is not None and account_activation_token.check_token(user, token):
-        user.profile.verified = True
-        user.save()
-        return redirect('index')
-    else:
-        return render(request, 'registration/account_activation_invalid.html')
-
-class ProfileView(LoginRequiredMixin, View):
-    """User's profile"""
-    login_url = '/accounts/login'
-
-    def get(self, request):
-        profile = Profile.objects.get(user=request.user)
-        form = SetPasswordForm(initial={'user': request.user})
-
-        return render(request, 'profile.html', {'form': form, 'profile': profile})
-
-    def post(self, request):
-        form = SetPasswordForm(request.POST)
-        profile = Profile.objects.get(user=request.user)
-
-        if form.is_valid():
-            try:
-                validate_password(form.cleaned_data['new_password1'])
-            except ValidationError as e:
-                form.add_error('new_password1', e)
-                return render(request, 'profile.html', {'form': form, 'profile': profile})
-
-            user = request.user
-            user.set_password(form.cleaned_data['new_password1'])
-            user.save()
-            update_session_auth_hash(request, user)
-
-            return render(request, 'profile.html', {'form': form, 'profile': profile, 'message': 'Password successfully changed.'})
-            
-        return render(request, 'profile.html', {'form': form, 'profile': profile})
-
+# GENERAL-PURPOSE VIEWS
 
 class IndexView(View):
     '''Main page'''
@@ -103,14 +35,14 @@ class IndexView(View):
         # five latest records
         releases = Release.objects.all().order_by('-id')[0:5]
 
-        return render(request, 'index.html', {'types': item_types, 'releases': releases})
+        return TemplateResponse(request, 'core/index.html', {'types': item_types, 'releases': releases})
 
 
 class ItemsListView(ListView):
     '''List of items'''
     paginate_by = 10
     model = Item
-    template_name = 'item_list.html'
+    template_name = 'core/item_list.html'
 
     def get_context_data(self, **kwargs):
         context = super(ItemsListView, self).get_context_data(**kwargs)
@@ -130,7 +62,7 @@ class ItemsListView(ListView):
 class SearchView(ListView):
     paginate_by = 10
     model = Item
-    template_name = 'item_list.html'
+    template_name = 'core/item_list.html'
 
     def get_queryset(self):
         return Item.objects.filter(name__icontains=self.request.GET.get('query'))
@@ -172,7 +104,7 @@ class ItemDetailView(View):
             rating_form = RatingForm(initial={'item': item, 'user': request.user})
 
             if item.status == 'v' or item.user == request.user:
-                return render(request, 'item_detail.html', {
+                return TemplateResponse(request, 'core/item_detail.html', {
                     'item': item,
                     'can_comment': can_comment,
                     'can_rate': can_rate,
@@ -186,7 +118,7 @@ class ItemDetailView(View):
                     })
 
         
-        return render(request, 'item_detail.html', {
+        return TemplateResponse(request, 'core/item_detail.html', {
             'item': item,
             'can_comment': can_comment,
             'can_rate': can_rate,
@@ -202,7 +134,7 @@ class NewItemView(LoginRequiredMixin, View):
     login_url = '/accounts/login'
 
     def get(self, request, type_url):
-        status = 'v' if request.user.has_perm('can_save_directly') else 'n'
+        status = 'v' if request.user.is_staff else 'n'
         form = ItemForm(initial={
             'url': None, 
             'user': request.user, 
@@ -210,7 +142,7 @@ class NewItemView(LoginRequiredMixin, View):
             'votes': 0, 
             'item_type': ItemType.objects.get(url=type_url)})
 
-        return render(request, 'modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'add'})
+        return TemplateResponse(request, 'core/modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'add'})
 
 
 class ModifyItemView(LoginRequiredMixin, View):
@@ -222,7 +154,7 @@ class ModifyItemView(LoginRequiredMixin, View):
         if item.user == request.user or request.user.is_staff:
             if operation == 'remove':
                 item.delete()
-                return render(request, 'operation_result.html', {
+                return TemplateResponse(request, 'core/operation_result.html', {
                     'op_name': 'remove item',
                     'status': 'success',
                     'message': 'Item successfully removed.'
@@ -237,9 +169,9 @@ class ModifyItemView(LoginRequiredMixin, View):
                     'source_code': item.source_code,
                     'documentation': item.documentation
                 })
-                return render(request, 'modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'edit'})
+                return TemplateResponse(request, 'core/modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'edit'})
             
-            return redirect('index')
+        return redirect('index')
 
 class SaveItemView(LoginRequiredMixin, View):
     '''Save edited or created Item instance'''
@@ -251,8 +183,8 @@ class SaveItemView(LoginRequiredMixin, View):
             if form.cleaned_data['url'] != None:
                 query = Item.objects.filter(url=form.cleaned_data['url'])
 
-            if form.cleaned_data['status'] == 'v' and not request.user.has_perm('can_save_directly'):
-                return redirect('')
+            # if form.cleaned_data['status'] == 'v' and not request.user.is_staff:
+            #     return redirect('index')
 
             if query.exists():
                 item = query.first()
@@ -281,7 +213,7 @@ class SaveItemView(LoginRequiredMixin, View):
 
             item.save()
 
-            return render(request, 'operation_result.html', {
+            return TemplateResponse(request, 'core/operation_result.html', {
                 'op_name': 'add item',
                 'status': 'success',
                 'message': 'Item successfully saved.'
@@ -302,7 +234,7 @@ class SaveCommentView(LoginRequiredMixin, View):
                 text=form.cleaned_data['text']
             ).save()
 
-            return render(request, 'operation_result.html', {
+            return TemplateResponse(request, 'core/operation_result.html', {
                 'op_name': 'add comment',
                 'status': 'success',
                 'message': 'Comment successfully saved.'
@@ -320,15 +252,11 @@ class ModifyCommentView(LoginRequiredMixin, View):
             if operation == 'remove':
                 comment.delete()
 
-                return render(request, 'operation_result.html', {
+                return TemplateResponse(request, 'core/operation_result.html', {
                     'op_name': 'remove comment',
                     'status': 'success',
                     'message': 'Comment successfully removed.'
                     })
-
-            if operation == 'edit':
-                # to implement in future
-                pass
 
         return redirect('index')
 
@@ -347,7 +275,7 @@ class SaveRatingView(LoginRequiredMixin, View):
                 value=form.cleaned_data['value']
             ).save()
 
-            return render(request, 'operation_result.html', {
+            return TemplateResponse(request, 'core/operation_result.html', {
                 'op_name': 'save rating',
                 'status': 'success',
                 'message': 'Rating successfully saved.'
@@ -355,7 +283,45 @@ class SaveRatingView(LoginRequiredMixin, View):
 
         return redirect('index')
 
+# USER-RELATED VIEWS
+
+env = Environment(
+    loader=FileSystemLoader(TEMPLATES_DIR),
+    )
+
+class ProfileView(LoginRequiredMixin, View):
+    """User's profile"""
+    login_url = '/accounts/login'
+
+    def get(self, request):
+        profile = Profile.objects.get(user=request.user)
+        form = SetPasswordForm(initial={'user': request.user})
+
+        return TemplateResponse(request, 'users/profile.html', {'form': form, 'profile': profile})
+
+    def post(self, request):
+        form = SetPasswordForm(request.POST)
+        profile = Profile.objects.get(user=request.user)
+
+        if form.is_valid():
+            try:
+                validate_password(form.cleaned_data['new_password1'])
+            except ValidationError as e:
+                form.add_error('new_password1', e)
+                return TemplateResponse(request, 'users/profile.html', {'form': form, 'profile': profile})
+
+            user = request.user
+            user.set_password(form.cleaned_data['new_password1'])
+            user.save()
+            update_session_auth_hash(request, user)
+
+            return TemplateResponse(request, 'users/profile.html', {'form': form, 'profile': profile, 'message': 'Password successfully changed.'})
+            
+        return TemplateResponse(request, 'users/profile.html', {'form': form, 'profile': profile})
+
 class SendEmailView(UserPassesTestMixin, View):
+    login_url = '/accounts/login'
+
     def test_func(self):
         return self.request.user.is_staff
 
@@ -375,3 +341,57 @@ class SendEmailView(UserPassesTestMixin, View):
             return redirect('/admin/archbucket_index_core/user/')
 
         return redirect('index')
+
+class SignUpView(UserPassesTestMixin, View): 
+    def test_func(self):
+        return not self.request.user.is_authenticated
+
+    def handle_no_permission(self):
+        return redirect(reverse('profile'))
+
+    def get(self, request):
+        form = SignUpForm()
+        
+        return TemplateResponse(request, 'registration/register.html', {'form': form})
+
+    def post(self, request):
+        form = SignUpForm(request.POST)
+
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = True
+            user.save()
+
+            template = env.get_template('registration/activation_email.html')
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = account_activation_token.make_token(user)
+            activation_link = f"http://{ get_current_site(request).domain }/activate/{uid}/{token}/"
+
+            message = template.render(
+                user=user,
+                link=activation_link,
+                time=datetime.datetime.now()
+            )
+
+            email.send_email(user.email, 'Activate your account', message)
+
+            return redirect('activation_email_sent')
+        
+        return render(request, 'registration/register.html', {'form': form})
+
+def activation_email_sent(request):
+    return render(request, 'registration/activation_email_sent.html')
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.profile.verified = True
+        user.save()
+        return redirect('index')
+    else:
+        return TemplateResponse(request, 'registration/account_activation_invalid.html')

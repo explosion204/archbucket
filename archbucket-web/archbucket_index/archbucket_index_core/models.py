@@ -2,15 +2,31 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 
 from datetime import datetime
 
+# USER-RELATED MODELS
+
 class User(AbstractUser):
     email = models.EmailField(unique=True)
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    verified = models.BooleanField(default=False)
+
+@receiver(post_save, sender=User)
+def update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    
+    instance.profile.save()
+
+
+# GENERAL-PURPOSE MODELS
 
 class ItemType(models.Model):
     name = models.CharField(verbose_name='Name', max_length=20)
@@ -29,13 +45,8 @@ class Item(models.Model):
     status = models.CharField(max_length=1, choices=[('v', 'Verified'), ('n', 'Not verified')], default='n')
     url = models.SlugField(max_length=150, unique=True, default=None)
 
-    created = models.DateTimeField(verbose_name='Created', default=datetime.now())
-    modified = models.DateTimeField(verbose_name='Modified', default=datetime.now())
-
-    class Meta:
-        permissions = [
-            ('can_save_directly', 'Can save or modify directly.')
-        ]
+    created = models.DateTimeField(verbose_name='Created', default=timezone.now())
+    modified = models.DateTimeField(verbose_name='Modified', default=timezone.now())
 
     def save(self, *args, **kwargs):
         self.modified = datetime.now()
@@ -73,15 +84,3 @@ class Release(models.Model):
     name = models.CharField(verbose_name='Name', max_length=20)
     version = models.CharField(verbose_name='Version', max_length=10)
     changelog = models.TextField(verbose_name='Changelog')
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    verified = models.BooleanField(default=False)
-
-@receiver(post_save, sender=User)
-def update_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-    
-    instance.profile.save()

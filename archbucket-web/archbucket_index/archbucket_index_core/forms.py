@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm 
 from .models import Item, Comment, Rating, User
 
+# GENERAL-PURPOSE FORMS
+
 class ItemForm(forms.ModelForm):
     url = forms.CharField(widget=forms.HiddenInput,  required=False)
     class Meta:
@@ -54,6 +56,8 @@ class RatingForm(forms.ModelForm):
             'item': forms.HiddenInput,
             'user': forms.HiddenInput
         }
+
+# USER-RELATED FORMS
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(max_length=255)
