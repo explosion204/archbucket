@@ -47,6 +47,7 @@ class ItemsListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(ItemsListView, self).get_context_data(**kwargs)
         context['items_type'] = ItemType.objects.get(url=self.kwargs['type_url'])
+        context['user_profile'] = Profile.objects.get(user=self.request.user)
         context['search'] = False
 
         return context
@@ -70,6 +71,7 @@ class SearchView(ListView):
     def get_context_data(self, **kwargs):
         context = super(SearchView, self).get_context_data(**kwargs)
         context['items_type'] = ItemType.objects.get(url=self.kwargs['type_url'])
+        context['user_profile'] = Profile.objects.get(user=self.request.user)
         context['search'] = True
         context['query'] = self.request.GET.get('query')
 
@@ -88,7 +90,7 @@ class ItemDetailView(View):
         can_edit = False
         can_remove = False
 
-        if not request.user.is_anonymous:
+        if not request.user.is_anonymous and request.user.profile.verified:
             can_comment = True
             can_rate = True
 
@@ -129,9 +131,15 @@ class ItemDetailView(View):
             })
 
 
-class NewItemView(LoginRequiredMixin, View):
+class NewItemView(LoginRequiredMixin, UserPassesTestMixin, View):
     '''Create new item instance'''
     login_url = '/accounts/login'
+
+    def test_func(self):
+        return self.request.user.profile.verified
+
+    def handle_no_permission(self):
+        return redirect('index')
 
     def get(self, request, type_url):
         status = 'v' if request.user.is_staff else 'n'
@@ -145,20 +153,23 @@ class NewItemView(LoginRequiredMixin, View):
         return TemplateResponse(request, 'core/modify_item.html', {'form': form, 'item_type_url': type_url, 'operation': 'add'})
 
 
-class ModifyItemView(LoginRequiredMixin, View):
+class ModifyItemView(LoginRequiredMixin, UserPassesTestMixin, View):
     '''Page which provides functionality of editing/removing'''
     login_url = '/accounts/login'
+
+    def test_func(self):
+        return self.request.user.profile.verified
+
+    def handle_no_permission(self):
+        return redirect('index')
 
     def get(self, request, type_url, item_url, operation):
         item = Item.objects.get(url=item_url)
         if item.user == request.user or request.user.is_staff:
             if operation == 'remove':
                 item.delete()
-                return TemplateResponse(request, 'core/operation_result.html', {
-                    'op_name': 'remove item',
-                    'status': 'success',
-                    'message': 'Item successfully removed.'
-                })
+
+                return redirect(reverse('items_list', kwargs={'type_url': type_url}))
 
             if operation == 'edit':
                 form = ItemForm(initial={
@@ -173,9 +184,15 @@ class ModifyItemView(LoginRequiredMixin, View):
             
         return redirect('index')
 
-class SaveItemView(LoginRequiredMixin, View):
+class SaveItemView(LoginRequiredMixin, UserPassesTestMixin, View):
     '''Save edited or created Item instance'''
     login_url = '/accounts/login'
+
+    def test_func(self):
+        return self.request.user.profile.verified
+
+    def handle_no_permission(self):
+        return redirect('index')
 
     def post(self, request):
         form = ItemForm(request.POST)
@@ -213,37 +230,43 @@ class SaveItemView(LoginRequiredMixin, View):
 
             item.save()
 
-            return TemplateResponse(request, 'core/operation_result.html', {
-                'op_name': 'add item',
-                'status': 'success',
-                'message': 'Item successfully saved.'
-                })
+            return redirect(reverse('item_detail', kwargs={'type_url': item.item_type.url, 'item_url': item.url}))
 
 
-class SaveCommentView(LoginRequiredMixin, View):
+class SaveCommentView(LoginRequiredMixin, UserPassesTestMixin, View):
     '''Save created Comment instance'''
     login_url = '/accounts/login'
+
+    def test_func(self):
+        return self.request.user.profile.verified
+
+    def handle_no_permission(self):
+        return redirect('index')
 
     def post(self, request):
         form = CommentForm(request.POST)
 
         if form.is_valid():
+            item=form.cleaned_data['item']
+
             Comment(
                 user=form.cleaned_data['user'],
-                item=form.cleaned_data['item'],
+                item=item,
                 text=form.cleaned_data['text']
             ).save()
 
-            return TemplateResponse(request, 'core/operation_result.html', {
-                'op_name': 'add comment',
-                'status': 'success',
-                'message': 'Comment successfully saved.'
-                })
+            return redirect(reverse('item_detail', kwargs={'type_url': item.item_type.url, 'item_url': item.url}))
 
 
-class ModifyCommentView(LoginRequiredMixin, View):
+class ModifyCommentView(LoginRequiredMixin, UserPassesTestMixin, View):
     '''Remove Comment instance'''
     login_url = '/accounts/login'
+
+    def test_func(self):
+        return self.request.user.profile.verified
+
+    def handle_no_permission(self):
+        return redirect('index')
 
     def get(self, request, pk, operation):
         comment = Comment.objects.get(id=pk)
@@ -252,25 +275,29 @@ class ModifyCommentView(LoginRequiredMixin, View):
             if operation == 'remove':
                 comment.delete()
 
-                return TemplateResponse(request, 'core/operation_result.html', {
-                    'op_name': 'remove comment',
-                    'status': 'success',
-                    'message': 'Comment successfully removed.'
-                    })
+                return redirect(reverse('item_detail', kwargs={'type_url': comment.item.item_type.url, 'item_url': comment.item.url}))
+
 
         return redirect('index')
 
 
-class SaveRatingView(LoginRequiredMixin, View):
+class SaveRatingView(LoginRequiredMixin, UserPassesTestMixin, View):
     '''Save Rating instance'''
     login_url = '/accounts/login'
+
+    def test_func(self):
+        return self.request.user.profile.verified
+
+    def handle_no_permission(self):
+        return redirect('index')
 
     def post(self, request):
         form = RatingForm(request.POST)
         
         if form.is_valid():
+            item = item=form.cleaned_data['item']
             Rating(
-                item=form.cleaned_data['item'],
+                item=item,
                 user=form.cleaned_data['user'],
                 value=form.cleaned_data['value']
             ).save()
@@ -280,6 +307,8 @@ class SaveRatingView(LoginRequiredMixin, View):
                 'status': 'success',
                 'message': 'Rating successfully saved.'
                 })
+
+            return redirect(reverse('item_detail', kwargs={'type_url': item.item_type.url, 'item_url': item.url}))
 
         return redirect('index')
 

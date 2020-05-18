@@ -69,7 +69,7 @@ class Rating(models.Model):
 
         try:
             former_rating = Rating.objects.get(Q(user=self.user), Q(item=self.item))
-            former_rating_value = Rating.objects.get(user=self.user).value
+            former_rating_value = former_rating.value
             former_rating.delete()
             self.item.item_rating = (self.item.item_rating * count - former_rating_value + int(self.value)) / count
         except ObjectDoesNotExist:

@@ -12,7 +12,7 @@ import pytest
 
 from archbucket_index_core.accounts.tokens import account_activation_token
 from archbucket_index_core.admin import CustomUserAdmin
-from archbucket_index_core.models import User, Item, Comment
+from archbucket_index_core.models import User, Item, Comment, Profile
 from archbucket_index_core.views import IndexView, ItemsListView, SearchView, ItemDetailView, NewItemView, ModifyItemView, SaveItemView, SaveCommentView, ModifyCommentView, SaveRatingView
 from archbucket_index_core.views import ProfileView, SendEmailView, SignUpView, activate
 
@@ -30,11 +30,15 @@ def anonymous_user():
 
 @pytest.fixture
 def not_staff_user(db):
-    return mixer.blend('archbucket_index_core.User', is_staff=False, password='test_pass123')
-    
+    user = mixer.blend('archbucket_index_core.User', is_staff=False, password='test_pass123')
+    user.profile.verified = True
+    return user
+
 @pytest.fixture
 def staff_user(db):
-    return mixer.blend('archbucket_index_core.User', is_staff=True, password='test_pass123')
+    user = mixer.blend('archbucket_index_core.User', is_staff=True, password='test_pass123')
+    user.profile.verified = True
+    return user
 
 @pytest.fixture
 def test_type(db):
@@ -94,9 +98,10 @@ class TestGeneralPurposeViews:
 
         assert len(list(view.get_queryset())) == 0
 
-    def test_search_view(self, request_factory, test_type):
+    def test_search_view(self, request_factory, test_type, not_staff_user):
         path = reverse('search', kwargs={'type_url': test_type.url})
         request = request_factory.get(path, {'query': 'foo'})
+        request.user = not_staff_user
 
         view = SearchView()
         view.setup(request)
@@ -114,6 +119,7 @@ class TestGeneralPurposeViews:
         item4 = mixer.blend('archbucket_index_core.Item', user=not_staff_user, name='bar', item_type=test_type, url='test_item_url4', status='v')
         path = reverse('search', kwargs={'type_url': test_type.url})
         request = request_factory.get(path, {'query': query})
+        request.user = not_staff_user
 
         view = SearchView()
         view.setup(request)
@@ -239,7 +245,7 @@ class TestGeneralPurposeViews:
         view = ModifyItemView()
 
         assert view.get(request, test_type.url, item.url, 'edit').status_code == 200
-        assert view.get(request, test_type.url, item.url, 'remove').status_code == 200
+        assert view.get(request, test_type.url, item.url, 'remove').status_code == 302
 
     def test_modify_item_view_authenticated_not_author_staff(self, request_factory, test_type, not_staff_user, staff_user):
         item = mixer.blend('archbucket_index_core.Item', user=not_staff_user, item_type=test_type, url='test_item_url', status='v')
@@ -250,7 +256,7 @@ class TestGeneralPurposeViews:
         view = ModifyItemView()
 
         assert view.get(request, test_type.url, item.url, 'edit').status_code == 200
-        assert view.get(request, test_type.url, item.url, 'remove').status_code == 200
+        assert view.get(request, test_type.url, item.url, 'remove').status_code == 302
 
     def test_save_item_view(self, request_factory, test_type, not_staff_user):
         path = reverse('save_item')
@@ -283,7 +289,7 @@ class TestGeneralPurposeViews:
         view = SaveCommentView()
         view.setup(request)
 
-        assert view.post(request).status_code == 200
+        assert view.post(request).status_code == 302
 
     def test_modify_comment_view_authenticated_not_author_not_staff(self, request_factory, test_type, not_staff_user, staff_user):
         item = mixer.blend('archbucket_index_core.Item', user=not_staff_user, item_type=test_type, url='test_item_url', status='v')
@@ -308,7 +314,7 @@ class TestGeneralPurposeViews:
         view = ModifyCommentView()
         view.setup(request)
 
-        assert view.get(request, comment.pk, 'remove').status_code == 200
+        assert view.get(request, comment.pk, 'remove').status_code == 302
 
     def test_modify_comment_view_authenticated_not_author_staff(self, request_factory, test_type, not_staff_user, staff_user):
         item = mixer.blend('archbucket_index_core.Item', user=not_staff_user, item_type=test_type, url='test_item_url', status='v')
@@ -320,7 +326,7 @@ class TestGeneralPurposeViews:
         view = ModifyCommentView()
         view.setup(request)
 
-        assert view.get(request, comment.pk, 'remove').status_code == 200
+        assert view.get(request, comment.pk, 'remove').status_code == 302
 
     def test_save_rating_view(self, request_factory, test_type, not_staff_user):
         item = mixer.blend('archbucket_index_core.Item', user=not_staff_user, item_type=test_type, url='test_item_url', status='v')

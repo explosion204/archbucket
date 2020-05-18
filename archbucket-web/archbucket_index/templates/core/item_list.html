@@ -10,7 +10,7 @@
     <div class="container padding-32" id="projects">
         <h3 class="border-bottom border-light-grey padding-16">{{ items_type.name }}</h3>
         <h4>{{ items_type.description }}</h4>
-        {% if not search and user.is_authenticated %}
+        {% if not search and user.is_authenticated and user_profile.verified %}
             <h5>
                 <a href="{{ items_type.url }}/new_item">New item</a>
             </h5>

@@ -1,8 +1,8 @@
+from datetime import datetime
+
 from django.utils import timezone
 from mixer.backend.django import mixer
 import pytest
-
-from datetime import datetime
 
 from archbucket_index_core.models import User, Profile, Item, ItemType
 
