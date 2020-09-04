@@ -37,3 +37,5 @@ class Bot(object):
             if request:
                 self.api_dict[request.api_name].send_response(request)
                 
+    def stop(self):
+        pass # to implement
