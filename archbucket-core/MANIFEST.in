@@ -1,3 +1,0 @@
-include archbucket/core/api/.api
-include archbucket/core/modules/.modules
-include archbucket/core/server.config
